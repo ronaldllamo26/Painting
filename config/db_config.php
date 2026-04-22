@@ -28,4 +28,3 @@ define('CLOUDINARY_API_SECRET', 'YOUR_API_SECRET');
 
 // AI API Keys (OpenAI or Google Vision)
 define('OPENAI_API_KEY', 'YOUR_OPENAI_API_KEY');
-?>

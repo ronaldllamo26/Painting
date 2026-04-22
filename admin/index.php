@@ -155,9 +155,9 @@ $totalRevenue = $pdo->query("SELECT SUM(a.price) FROM orders o JOIN artworks a O
                                     <h6 class="mb-0 small fw-bold text-truncate" style="max-width: 100px;"><?php echo $art['title']; ?></h6>
                                     <span class="badge <?php echo $statusBadge; ?> x-small opacity-75 mt-1"><?php echo $art['status']; ?></span>
                                 </div>
-                                <div class="d-flex">
-                                    <a href="edit_artwork.php?id=<?php echo $art['id']; ?>" class="btn btn-sm text-secondary p-1"><i class="fas fa-edit"></i></a>
-                                    <button class="btn btn-sm text-danger p-1" onclick="deleteArtwork(<?php echo $art['id']; ?>)"><i class="fas fa-trash-alt"></i></button>
+                                <div class="d-flex" style="position: relative; z-index: 10;">
+                                    <a href="edit_artwork.php?id=<?php echo $art['id']; ?>" class="btn btn-sm btn-outline-secondary p-1 me-1" style="position: relative; z-index: 11;"><i class="fas fa-edit"></i></a>
+                                    <button class="btn btn-sm btn-outline-danger p-1" onclick="deleteArtwork(<?php echo $art['id']; ?>)" style="position: relative; z-index: 11;"><i class="fas fa-trash-alt"></i></button>
                                 </div>
                             </div>
                         <?php } ?>

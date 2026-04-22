@@ -34,68 +34,107 @@ require_once '../config/db_config.php';
     <?php include 'sidebar.php'; ?>
 
     <div class="main-content">
-        <div class="d-flex align-items-center mb-5">
-            <a href="index.php" class="btn btn-sm btn-outline-secondary me-3"><i class="fas fa-arrow-left"></i></a>
-            <h3 class="fw-bold m-0">New Painting</h3>
-        </div>
+        <div class="container-fluid py-4">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div class="d-flex align-items-center">
+                    <a href="index.php" class="btn btn-sm btn-light border me-3 shadow-sm"><i class="fas fa-arrow-left"></i></a>
+                    <h3 class="fw-bold m-0" style="letter-spacing: -0.5px;">New Painting</h3>
+                </div>
+                <div class="text-secondary small d-none d-md-block">Matthew Rillera's Studio &bull; Admin Access</div>
+            </div>
 
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <div class="glass-card p-4 p-md-5">
-                    <form id="uploadForm">
-                        <div class="row g-3 g-md-4 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label">Title</label>
-                                <input type="text" name="title" class="form-control form-control-lg shadow-sm" required>
+            <div class="row justify-content-center">
+                <div class="col-lg-11">
+                    <div class="glass-card shadow-sm overflow-hidden">
+                        <div class="row g-0">
+                            <!-- Left Side: Form -->
+                            <div class="col-md-7 p-4 p-md-5 border-end">
+                                <form id="uploadForm">
+                                    <div class="mb-4">
+                                        <label class="form-label">Painting Title</label>
+                                        <input type="text" name="title" class="form-control form-control-lg border-light bg-light" required placeholder="Enter title...">
+                                    </div>
+                                    
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-7">
+                                            <label class="form-label">Price (PHP)</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text border-light bg-light">₱</span>
+                                                <input type="number" name="price" class="form-control border-light bg-light" required placeholder="0.00" style="max-width: 150px;">
+                                                <div class="input-group-text border-light bg-white flex-grow-1">
+                                                    <div class="form-check m-0">
+                                                        <input class="form-check-input" type="checkbox" name="is_negotiable" id="isNegotiable">
+                                                        <label class="form-check-label x-small fw-bold text-dark" for="isNegotiable">Negotiable</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-5">
+                                            <label class="form-label">Dimensions</label>
+                                            <input type="text" name="size" class="form-control border-light bg-light" required placeholder="e.g. 24x36">
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label">Medium / Material</label>
+                                        <input type="text" name="medium" class="form-control border-light bg-light" required placeholder="e.g. Acrylic on Canvas">
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label">Artwork Image</label>
+                                        <div class="image-upload-zone p-4 border-dashed rounded text-center bg-light" style="cursor: pointer;" onclick="document.getElementById('imageInput').click()">
+                                            <input type="file" name="image" id="imageInput" class="d-none" accept="image/*" required>
+                                            <div id="uploadPlaceholder">
+                                                <i class="fas fa-cloud-upload-alt fa-2x text-secondary mb-2"></i>
+                                                <p class="small text-secondary mb-0">Click to upload or drag and drop</p>
+                                            </div>
+                                            <img id="imagePreview" src="#" alt="Preview" class="preview-img mx-auto" style="display: none; max-height: 200px;">
+                                        </div>
+                                    </div>
+
+                                    <div class="d-grid">
+                                        <button type="button" id="btnAnalyze" class="btn btn-dark btn-lg py-3 shadow-sm"><i class="fas fa-magic me-2"></i> Analyze with AI</button>
+                                        <button type="submit" id="btnSave" class="btn btn-primary btn-lg py-3 shadow-sm d-none"><i class="fas fa-save me-2"></i> Save Painting</button>
+                                    </div>
+                                </form>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Price (PHP)</label>
-                                <div class="input-group input-group-lg shadow-sm">
-                                    <input type="number" name="price" class="form-control" required>
-                                    <div class="input-group-text bg-white">
-                                        <input class="form-check-input mt-0 me-1" type="checkbox" name="is_negotiable" id="isNegotiable">
-                                        <label class="x-small mb-0" for="isNegotiable">Negot.</label>
+
+                            <!-- Right Side: AI Insights -->
+                            <div class="col-md-5 bg-light p-4 p-md-5 d-flex flex-column">
+                                <div id="aiSection" class="h-100 d-none animate__animated animate__fadeIn">
+                                    <div class="d-flex align-items-center mb-4">
+                                        <div class="bg-primary text-white p-2 rounded me-3"><i class="fas fa-robot"></i></div>
+                                        <h5 class="fw-bold m-0">AI Insights</h5>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label class="form-label text-dark opacity-75">Generated Description</label>
+                                        <textarea name="ai_description" id="aiDesc" class="form-control border-0 shadow-sm bg-white" rows="6" style="resize: none;"></textarea>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label text-dark opacity-75">Suggested Tags</label>
+                                        <input type="text" name="ai_tags" id="aiTags" class="form-control border-0 shadow-sm bg-white mb-3">
+                                        <div id="quickTags" class="d-flex flex-wrap gap-2">
+                                            <?php foreach(['Abstract','Modern','Vibrant','Portrait','Landscape','Minimalist'] as $t): ?>
+                                                <span class="badge bg-white text-dark border p-2 tag-sug" onclick="addTag('<?php echo $t; ?>')"><?php echo $t; ?></span>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-auto p-3 bg-white rounded shadow-sm border-start border-primary border-4">
+                                        <p class="x-small text-secondary mb-0"><i class="fas fa-info-circle me-1"></i> These suggestions help collectors find your work through search filters.</p>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label">Size</label>
-                                <input type="text" name="size" class="form-control shadow-sm" required placeholder="24x36\"">
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label">Medium</label>
-                                <input type="text" name="medium" class="form-control shadow-sm" required placeholder="Acrylic">
+                                
+                                <div id="aiEmptyState" class="h-100 d-flex flex-column align-items-center justify-content-center text-center opacity-50 py-5">
+                                    <i class="fas fa-sparkles fa-3x mb-3"></i>
+                                    <h5>AI Studio Assistant</h5>
+                                    <p class="small">Fill in the details and analyze to see AI suggestions.</p>
+                                </div>
                             </div>
                         </div>
-
-                        <div class="mb-4">
-                            <label class="form-label">Artwork Image</label>
-                            <div class="p-3 border-dashed rounded text-center bg-light">
-                                <input type="file" name="image" id="imageInput" class="form-control form-control-sm" accept="image/*" required>
-                                <img id="imagePreview" src="#" alt="Preview" class="preview-img shadow-sm">
-                            </div>
-                        </div>
-
-                        <div id="aiSection" class="animate__animated animate__fadeIn d-none bg-light p-3 p-md-4 rounded mb-4">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="bg-dark text-white p-2 rounded me-3"><i class="fas fa-robot"></i></div>
-                                <div><h6 class="fw-bold mb-0">AI Suggestions</h6></div>
-                            </div>
-                            <textarea name="ai_description" id="aiDesc" class="form-control shadow-sm mb-3" rows="4"></textarea>
-                            <label class="form-label">Tags</label>
-                            <input type="text" name="ai_tags" id="aiTags" class="form-control shadow-sm mb-2">
-                            <div id="quickTags" class="d-flex flex-wrap gap-1">
-                                <?php foreach(['Abstract','Contemporary','Vibrant','Minimalist','Landscape','Portrait'] as $t): ?>
-                                    <span class="badge bg-white text-dark border p-2 tag-sug" onclick="addTag('<?php echo $t; ?>')"><?php echo $t; ?></span>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-
-                        <div class="d-grid gap-2">
-                            <button type="button" id="btnAnalyze" class="btn btn-dark btn-lg py-3 shadow"><i class="fas fa-magic me-2"></i> Analyze with AI</button>
-                            <button type="submit" id="btnSave" class="btn btn-dark btn-lg py-3 shadow d-none"><i class="fas fa-save me-2"></i> Save Painting</button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -105,9 +144,11 @@ require_once '../config/db_config.php';
     <script>
         const imageInput = document.getElementById('imageInput');
         const imagePreview = document.getElementById('imagePreview');
+        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
         const btnAnalyze = document.getElementById('btnAnalyze');
         const btnSave = document.getElementById('btnSave');
         const aiSection = document.getElementById('aiSection');
+        const aiEmptyState = document.getElementById('aiEmptyState');
         const loadingOverlay = document.getElementById('loadingOverlay');
 
         function addTag(tag) {
@@ -118,7 +159,11 @@ require_once '../config/db_config.php';
 
         imageInput.onchange = evt => {
             const [file] = imageInput.files;
-            if (file) { imagePreview.src = URL.createObjectURL(file); imagePreview.style.display = 'block'; }
+            if (file) { 
+                imagePreview.src = URL.createObjectURL(file); 
+                imagePreview.style.display = 'block'; 
+                uploadPlaceholder.style.display = 'none';
+            }
         }
 
         btnAnalyze.onclick = async () => {
@@ -131,10 +176,21 @@ require_once '../config/db_config.php';
                 if (result.status === 'success') {
                     document.getElementById('aiDesc').value = result.description;
                     document.getElementById('aiTags').value = result.tags;
-                    const cUrl = document.createElement('input'); cUrl.type = 'hidden'; cUrl.name = 'cloudinary_url'; cUrl.value = result.image_url;
-                    const cId = document.createElement('input'); cId.type = 'hidden'; cId.name = 'cloudinary_id'; cId.value = result.cloudinary_id;
-                    document.getElementById('uploadForm').appendChild(cUrl); document.getElementById('uploadForm').appendChild(cId);
-                    aiSection.classList.remove('d-none'); btnAnalyze.classList.add('d-none'); btnSave.classList.remove('d-none');
+                    
+                    // Add hidden fields for Cloudinary if not already there
+                    if(!document.querySelector('input[name="cloudinary_url"]')) {
+                        const cUrl = document.createElement('input'); cUrl.type = 'hidden'; cUrl.name = 'cloudinary_url';
+                        const cId = document.createElement('input'); cId.type = 'hidden'; cId.name = 'cloudinary_id';
+                        document.getElementById('uploadForm').appendChild(cUrl); document.getElementById('uploadForm').appendChild(cId);
+                    }
+                    
+                    document.querySelector('input[name="cloudinary_url"]').value = result.image_url;
+                    document.querySelector('input[name="cloudinary_id"]').value = result.cloudinary_id;
+
+                    aiSection.classList.remove('d-none'); 
+                    aiEmptyState.classList.add('d-none');
+                    btnAnalyze.classList.add('d-none'); 
+                    btnSave.classList.remove('d-none');
                 }
             } finally { loadingOverlay.style.display = 'none'; }
         };
@@ -142,9 +198,17 @@ require_once '../config/db_config.php';
         document.getElementById('uploadForm').onsubmit = async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
-            const response = await fetch('save_artwork.php', { method: 'POST', body: formData });
-            const result = await response.json();
-            if (result.status === 'success') Swal.fire('Saved!', 'Painting is live.', 'success').then(() => window.location.href = 'index.php');
+            try {
+                const response = await fetch('save_artwork.php', { method: 'POST', body: formData });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    Swal.fire('Saved!', 'Painting is live in the gallery.', 'success').then(() => window.location.href = 'index.php');
+                } else {
+                    Swal.fire('Error', result.message || 'Failed to save.', 'error');
+                }
+            } catch (err) {
+                Swal.fire('Error', 'Connection error.', 'error');
+            }
         };
     </script>
 </body>

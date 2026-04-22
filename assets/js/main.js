@@ -223,6 +223,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const modal = new bootstrap.Modal(document.getElementById('buyModal'));
         modal.show();
+
+        // Refresh Lightbox specifically for modal
+        if (typeof refreshFsLightbox === 'function') {
+            refreshFsLightbox();
+        }
     };
 
     // Toggle GCash Section

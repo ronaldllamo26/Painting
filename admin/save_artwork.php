@@ -1,9 +1,13 @@
 <?php
+ob_start();
 header('Content-Type: application/json');
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // Don't echo errors to output, we'll catch them
+
 require_once '../config/db_config.php';
 session_start();
 
-if (!isset($_SESSION['admin_id'])) {
+if (!isset($_SESSION['admin_logged_in'])) {
     echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
     exit();
 }
@@ -23,8 +27,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare("INSERT INTO artworks (title, price, size, medium, image_url, cloudinary_id, ai_description, ai_tags, is_negotiable, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Available')");
         $stmt->execute([$title, $price, $size, $medium, $image_url, $cloudinary_id, $ai_description, $ai_tags, $is_negotiable]);
 
+        ob_clean();
         echo json_encode(['status' => 'success']);
     } catch (PDOException $e) {
+        ob_clean();
         echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
     }
 }

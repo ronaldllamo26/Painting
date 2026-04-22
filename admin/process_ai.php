@@ -1,6 +1,13 @@
 <?php
 header('Content-Type: application/json');
 require_once '../config/db_config.php';
+session_start();
+
+if (!isset($_SESSION['admin_logged_in'])) {
+    header('Content-Type: application/json');
+    echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
+    exit();
+}
 
 // This script now uses **local storage** instead of Cloudinary.
 // It also returns dummy AI description/tags so the front‑end can still display them.

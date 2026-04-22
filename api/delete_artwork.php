@@ -1,9 +1,11 @@
 <?php
+ob_start();
 header('Content-Type: application/json');
 require_once '../config/db_config.php';
 session_start();
 
-if (!isset($_SESSION['admin_id'])) {
+if (!isset($_SESSION['admin_logged_in'])) {
+    ob_clean();
     echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
     exit();
 }
@@ -23,8 +25,10 @@ if (isset($data['id'])) {
         $stmt = $pdo->prepare("DELETE FROM artworks WHERE id = ?");
         $stmt->execute([$id]);
 
+        ob_clean();
         echo json_encode(['status' => 'success']);
     } catch (PDOException $e) {
+        ob_clean();
         echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
     }
 }
