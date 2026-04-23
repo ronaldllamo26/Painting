@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <h5 class="artwork-title fw-bold" style="font-family: var(--font-serif);">${sanitizeHTML(art.title)}</h5>
                         <p class="text-secondary x-small mb-2 text-uppercase" style="letter-spacing: 2px;">${art.size} | ${art.medium}</p>
                         <p class="artwork-price fw-bold mb-3">₱${parseFloat(art.price).toLocaleString()}</p>
-                        <button class="btn btn-dark w-100 rounded-0 py-2 small fw-bold" onclick="viewDetails(${art.id})">VIEW DETAILS</button>
+                        <button class="btn btn-dark w-100 rounded-0 py-2 small fw-bold" onclick="viewDetails(${art.id})">BUY NOW</button>
                     </div>
                 </div>
             `;
