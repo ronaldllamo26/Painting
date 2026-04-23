@@ -315,8 +315,8 @@ foreach ($settings_raw as $s) {
                     <h6 class="fw-bold mb-4 small text-uppercase" style="letter-spacing: 2px;">Information</h6>
                     <ul class="list-unstyled small text-secondary">
                         <li class="mb-2">Shipping & Delivery</li>
-                        <li class="mb-2">Terms of Service</li>
-                        <li class="mb-2">Privacy Policy</li>
+                        <li class="mb-2"><a href="terms.php" class="text-decoration-none text-secondary hover-white">Terms of Service</a></li>
+                        <li class="mb-2"><a href="privacy.php" class="text-decoration-none text-secondary hover-white">Privacy Policy</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-4 col-md-4">
