@@ -3,21 +3,14 @@ header('Content-Type: application/json');
 require_once '../config/db_config.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $contact = $_POST['contact_number'] ?? '';
-
-    if (empty($contact)) {
-        echo json_encode(['status' => 'error', 'message' => 'Contact number is required.']);
-        exit();
-    }
+    $contact = $_POST['contact_number'];
 
     try {
-        $stmt = $pdo->prepare("
-            SELECT o.*, a.title as artwork_title, a.image_url 
-            FROM orders o 
-            JOIN artworks a ON o.artwork_id = a.id 
-            WHERE o.contact_number = ? 
-            ORDER BY o.order_date DESC
-        ");
+        $stmt = $pdo->prepare("SELECT o.*, a.title as art_title, a.image_url as art_img 
+                             FROM orders o 
+                             JOIN artworks a ON o.artwork_id = a.id 
+                             WHERE o.contact_number = ? 
+                             ORDER BY o.order_date DESC");
         $stmt->execute([$contact]);
         $orders = $stmt->fetchAll();
 
@@ -27,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['status' => 'error', 'message' => 'No orders found for this contact number.']);
         }
     } catch (PDOException $e) {
-        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        echo json_encode(['status' => 'error', 'message' => 'Database error.']);
     }
 }
 ?>

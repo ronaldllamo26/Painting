@@ -22,6 +22,24 @@ body {
 
 .announcement-bar {
     z-index: 1031;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+}
+
+.marquee-content {
+    display: flex;
+    white-space: nowrap;
+    animation: marquee 25s linear infinite;
+}
+
+.marquee-content span {
+    padding: 0 60px;
+    display: inline-block;
+}
+
+@keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
 }
 
 /* Navbar */
@@ -132,11 +150,64 @@ body {
     box-shadow: 0 20px 40px rgba(0,0,0,0.08);
 }
 
-.artwork-img-container {
-    height: 450px;
-    overflow: hidden;
-    background: #f9f9f9;
-    position: relative;
+/* Artwork Card Actions */
+.artwork-img-container { 
+    position: relative; 
+    overflow: hidden; 
+    height: 480px; /* Fixed height for uniformity */
+    background: #f8f9fa;
+}
+.artwork-actions {
+    position: absolute;
+    top: 15px;
+    right: -60px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+.artwork-card:hover .artwork-actions {
+    right: 15px;
+}
+.action-btn {
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: #000;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+.action-btn:hover {
+    background: #000;
+    color: #fff;
+}
+.wishlist-btn.active {
+    color: #ff4757;
+}
+
+.artwork-info { padding: 25px; }
+.artwork-title { font-family: 'Playfair Display', serif; font-weight: 700; margin-bottom: 10px; }
+.artwork-price { font-weight: 600; color: #000; font-size: 1.1rem; margin-bottom: 20px; }
+
+.btn-buy {
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+}
+.btn-buy:hover {
+    background: #333;
 }
 
 .artwork-img {
@@ -207,8 +278,10 @@ body {
 }
 
 .btn-gallery:hover {
-    background: transparent;
+    background: #fff;
     color: #000;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
 /* Filter Bar */
@@ -330,4 +403,82 @@ body {
     #modalArtImg { max-height: 280px !important; }
     .modal-price-text { font-size: 1.5rem !important; }
     .modal-body { padding: 1.5rem !important; }
+}
+
+/* Artwork Magnifier (Loupe) */
+.magnifier-container {
+    position: relative;
+    cursor: crosshair;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #f1f5f9;
+}
+
+.magnifier-img {
+    width: 100%;
+    display: block;
+    transition: transform 0.1s ease-out;
+}
+
+.magnifier-loupe {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+    pointer-events: none;
+    display: none;
+    z-index: 1000;
+    background-repeat: no-repeat;
+    background-color: #fff;
+}
+
+/* Floating Messenger Chat */
+.messenger-fab {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #0084FF, #00A3FF);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 28px;
+    box-shadow: 0 10px 25px rgba(0, 132, 255, 0.3);
+    cursor: pointer;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+.messenger-fab:hover {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 15px 35px rgba(0, 132, 255, 0.4);
+    color: white;
+}
+.messenger-fab::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid #0084FF;
+    animation: ripple 2s infinite;
+}
+@keyframes ripple {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.5); opacity: 0; }
+}
+
+@media (max-width: 768px) {
+    .messenger-fab {
+        bottom: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+    }
 }

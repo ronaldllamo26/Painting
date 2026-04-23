@@ -12,251 +12,193 @@ foreach ($settings_raw as $s) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matthew Rillera's Studio | Original Paintings</title>
+    <title>Matthew Rillera's Studio | Original Masterpieces</title>
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@700;900&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="assets/css/style.css">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- FsLightbox -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fslightbox/3.0.9/index.min.js"></script>
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <meta name="csrf-token" content="<?php echo $_SESSION['csrf_token']; ?>">
 </head>
 <body>
 
     <!-- Announcement Bar -->
-    <div class="announcement-bar py-2 text-center small text-white" style="background: #000; letter-spacing: 2px;">
-        AUTHENTIC HAND-PAINTED MASTERPIECES | CERTIFICATE OF AUTHENTICITY INCLUDED | COMMISSIONS OPEN
+    <div class="announcement-bar py-2 overflow-hidden text-white" style="background: #000; letter-spacing: 2px; font-family: 'Outfit', sans-serif;">
+        <div class="marquee-content">
+            <span>AUTHENTIC HAND-PAINTED MASTERPIECES</span>
+            <span>CERTIFICATE OF AUTHENTICITY INCLUDED</span>
+            <span>FREE SHIPPING NATIONWIDE</span>
+            <span>COMMISSIONS OPEN FOR 2026</span>
+            <!-- Duplicate for seamless scroll -->
+            <span>AUTHENTIC HAND-PAINTED MASTERPIECES</span>
+            <span>CERTIFICATE OF AUTHENTICITY INCLUDED</span>
+            <span>FREE SHIPPING NATIONWIDE</span>
+            <span>COMMISSIONS OPEN FOR 2026</span>
+        </div>
     </div>
 
     <!-- Navbar -->
-    <nav class="navbar sticky-top">
-        <div class="container align-items-center">
-            <div class="d-flex align-items-center flex-grow-1">
+    <nav class="navbar sticky-top bg-white py-3 shadow-sm">
+        <div class="container">
+            <div class="d-flex align-items-center justify-content-between w-100">
                 <!-- Nav Links -->
-                <div class="nav-links d-none d-md-flex gap-4 me-5">
-                    <a href="#" class="nav-link-custom">Home</a>
-                    <a href="#gallery" class="nav-link-custom">Gallery</a>
-                    <a href="javascript:void(0)" class="nav-link-custom" data-bs-toggle="modal" data-bs-target="#trackModal">Track Order</a>
+                <div class="nav-links d-none d-lg-flex gap-4">
+                    <a href="index.php" class="nav-link-custom active">HOME</a>
+                    <a href="#gallery" class="nav-link-custom">GALLERY</a>
+                    <a href="#" class="nav-link-custom" data-bs-toggle="modal" data-bs-target="#trackOrderModal">TRACK ORDER</a>
+                    <a href="#" class="nav-link-custom" data-bs-toggle="modal" data-bs-target="#verifyCOAModal">VERIFY COA</a>
+                    <a href="#" class="nav-link-custom" data-bs-toggle="modal" data-bs-target="#commissionModal">COMMISSION</a>
+                    <a href="portal.php" class="nav-link-custom fw-bold"><i class="fas fa-user-circle me-1"></i> COLLECTOR PORTAL</a>
                 </div>
 
-                <!-- Search Bar -->
-                <div class="search-wrapper flex-grow-1 mx-md-5">
-                    <div class="input-group">
-                        <span class="input-group-text bg-transparent border-0 ps-0"><i class="fas fa-search text-secondary"></i></span>
-                        <input type="text" id="navbarSearch" class="form-control border-0 bg-transparent ps-2" placeholder="Search for art, styles, or colors..." aria-label="Search">
+                <!-- Search & Actions -->
+                <div class="d-flex align-items-center gap-3">
+                    <div class="search-wrapper d-none d-md-block">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-0"><i class="fas fa-search text-secondary"></i></span>
+                            <input type="text" id="navbarSearch" class="form-control bg-light border-0" placeholder="Search art...">
+                        </div>
+                    </div>
+                    <div class="position-relative cursor-pointer" onclick="openCart()">
+                        <i class="fas fa-shopping-bag fa-lg"></i>
+                        <span class="cart-count position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark">0</span>
                     </div>
                 </div>
             </div>
-
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <header class="hero-section" style="background-image: url('assets/img/hero.png');">
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-            <p class="hero-subtitle">Original Artworks & Fine Prints</p>
-            <h1 class="hero-title">Matthew Rillera's Studio</h1>
-            <a href="#gallery" class="btn-gallery">Explore Collection</a>
+    <header class="hero-section" style="background: url('assets/img/hero.png') center/cover; height: 80vh; position: relative;">
+        <div class="hero-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.3);"></div>
+        <div class="container h-100 d-flex flex-column justify-content-center align-items-center text-center text-white position-relative">
+            <p class="text-uppercase mb-2 animate__animated animate__fadeInDown" style="letter-spacing: 5px; font-weight: 300;">Original Masterpieces</p>
+            <h1 class="display-1 fw-bold mb-4 animate__animated animate__fadeInUp" style="font-family: var(--font-serif);">Matthew Rillera's Studio</h1>
+            <a href="#gallery" class="btn btn-outline-light px-5 py-3 rounded-0 animate__animated animate__fadeInUp animate__delay-1s">EXPLORE COLLECTION</a>
         </div>
     </header>
 
-    <!-- Filter Bar & Gallery -->
-    <div class="container mt-5 pt-5" id="gallery">
-        <div class="text-center mb-5">
-            <h6 class="text-uppercase text-secondary mb-2" style="letter-spacing: 3px;">The Collection</h6>
-            <h2 class="display-6" style="font-family: var(--font-serif);">Available Artworks</h2>
-        </div>
-        <div class="filter-bar" id="tagFilters">
-            <button class="filter-btn active" data-filter="all">All Artworks</button>
-            <!-- Dynamic tags will be injected here -->
-        </div>
-    </div>
-
-    <!-- Gallery Grid -->
-    <div class="container mb-5">
-        <div class="row g-5" id="galleryContainer" style="min-height: 1200px;">
-            <!-- Loading Spinner -->
-            <div class="col-12 text-center py-5">
-                <div class="spinner-border text-dark" role="status"></div>
+    <main class="container py-5" id="gallery">
+        <div class="text-center mb-5 pt-5">
+            <p class="text-secondary small text-uppercase mb-2" style="letter-spacing: 4px;">Browse the Archive</p>
+            <h2 class="display-4 fw-bold mb-4" style="font-family: var(--font-serif);">Available Artworks</h2>
+            <div class="filter-bar d-flex flex-wrap justify-content-center gap-4 mb-4" id="tagFilters">
+                <button class="filter-btn active" data-filter="all">All Pieces</button>
             </div>
         </div>
-        <!-- Pagination UI -->
-        <nav class="mt-5">
-            <ul class="pagination justify-content-center" id="paginationContainer"></ul>
-        </nav>
-    </div>
 
-    <!-- About Section -->
-    <section class="py-5 bg-white border-bottom">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-5 mb-4 mb-md-0">
-                    <img src="https://images.unsplash.com/photo-1549490349-8643362247b5?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" class="img-fluid border" alt="Artist at work">
+        <!-- Artwork Grid -->
+        <div class="row g-4" id="galleryContainer">
+            <!-- Artworks injected here -->
+        </div>
+
+        <!-- Pagination -->
+        <div class="d-flex justify-content-center mt-5">
+            <nav id="paginationContainer">
+                <!-- Pagination injected here -->
+            </nav>
+        </div>
+    </main>
+
+    <!-- Artist Spotlight Section -->
+    <section class="py-5 bg-light overflow-hidden">
+        <div class="container py-5">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6 animate__animated animate__fadeInLeft">
+                    <div class="position-relative">
+                        <img src="assets/img/artist_process.jpg" class="img-fluid shadow-lg" alt="Artist at work" style="border-radius: 4px;">
+                    </div>
                 </div>
-                <div class="col-md-7 ps-md-5">
-                    <h6 class="text-uppercase text-secondary mb-3" style="letter-spacing: 3px;">The Artist</h6>
-                    <h2 class="display-5 mb-4" style="font-family: var(--font-serif);">Matthew Rillera</h2>
+                <div class="col-lg-6 animate__animated animate__fadeInRight">
+                    <p class="text-secondary small text-uppercase mb-2" style="letter-spacing: 4px;">The Artist</p>
+                    <h2 class="display-5 fw-bold mb-4" style="font-family: var(--font-serif);">Matthew Rillera</h2>
                     <p class="lead text-secondary mb-4">A contemporary painter based in the Philippines, Matthew specializes in emotive landscapes and abstract expressions that capture the raw beauty of Filipino life.</p>
                     <p class="text-secondary mb-5">Each piece in this gallery is a result of meticulous layers, blending traditional techniques with modern perspectives. His works have been featured in numerous local exhibitions and private collections worldwide.</p>
-                    <a href="#" class="text-dark text-decoration-none fw-bold border-bottom border-dark pb-1">LEARN MORE ABOUT HIS STORY</a>
+                    <a href="#" class="text-dark fw-bold text-decoration-none border-bottom border-2 border-dark pb-1 text-uppercase small" style="letter-spacing: 2px;">Learn more about his story</a>
                 </div>
             </div>
         </div>
     </section>
 
-
-
-    <!-- Process Section -->
-    <section class="py-5 bg-light">
-        <div class="container text-center">
-            <h6 class="text-uppercase text-secondary mb-4" style="letter-spacing: 3px;">The Studio Process</h6>
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <i class="fas fa-palette fa-2x mb-3"></i>
-                    <h5>Original Art</h5>
-                    <p class="small text-secondary">Every piece is 100% hand-painted and unique.</p>
-                </div>
-                <div class="col-md-4">
-                    <i class="fas fa-certificate fa-2x mb-3"></i>
-                    <h5>Authenticity</h5>
-                    <p class="small text-secondary">Includes a signed certificate of authenticity.</p>
-                </div>
-                <div class="col-md-4">
-                    <i class="fas fa-truck-fast fa-2x mb-3"></i>
-                    <h5>Delivery Options</h5>
-                    <p class="small text-secondary">Lalamove (Metro Manila) or Scheduled Meet-ups available.</p>
+    <!-- Cart Modal -->
+    <div class="modal fade" id="cartModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+                <div class="modal-body p-4 p-md-5">
+                    <h4 class="fw-bold mb-4">Your Collection</h4>
+                    <div id="cartItemsList" class="mb-4"></div>
+                    <div id="cartEmptyMsg" class="text-center py-4 d-none">
+                        <i class="fas fa-shopping-bag fa-3x mb-3 opacity-25"></i>
+                        <p class="text-secondary">Your bag is empty.</p>
+                    </div>
+                    <button class="btn btn-dark w-100 py-3 rounded-pill fw-bold" data-bs-dismiss="modal">CONTINUE SHOPPING</button>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- Footer -->
-    <footer class="py-5 bg-white border-top">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4 mb-4">
-                    <h5 class="mb-4" style="font-family: var(--font-serif);"><?php echo $settings['studio_name']; ?></h5>
-                    <p class="small text-secondary mb-4">Sharing the beauty of the Philippines through contemporary art. Visit our studio in Quezon City.</p>
-                    <div class="d-flex gap-3 align-items-center">
-                        <a href="<?php echo $settings['facebook_link']; ?>" target="_blank" class="text-dark" title="Facebook"><i class="fab fa-facebook-f"></i></a>
-                        <a href="mailto:<?php echo $settings['email_address']; ?>" class="text-dark" title="Email"><i class="fas fa-envelope"></i></a>
-                        <a href="tel:<?php echo str_replace(' ', '', $settings['contact_number']); ?>" class="text-dark" title="Call Us"><i class="fas fa-phone"></i></a>
-                        <span class="small text-secondary ms-2"><?php echo $settings['contact_number']; ?></span>
-                    </div>
-                </div>
-                <div class="col-md-2 col-6 mb-4">
-                    <h6 class="text-uppercase small fw-bold mb-4">Quick Links</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="#gallery" class="text-decoration-none text-secondary small d-block mb-2" onclick="filterByTag('All')">New Arrivals</a></li>
-                        <li><a href="https://m.me/<?php echo $settings['messenger_id']; ?>" target="_blank" class="text-decoration-none text-secondary small d-block mb-2">Commission Art</a></li>
-                        <li><a href="#gallery" class="text-decoration-none text-secondary small d-block mb-2" onclick="filterByTag('Prints')">Prints</a></li>
-                        <li><a href="#about" class="text-decoration-none text-secondary small d-block mb-2">About</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-2 col-6 mb-4">
-                    <h6 class="text-uppercase small fw-bold mb-4">Customer Care</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="#" class="text-decoration-none text-secondary small d-block mb-2" onclick="Swal.fire('Shipping Policy', 'We ship nationwide via Lalamove or J&T. Shipping fee is shouldered by the buyer.', 'info')">Shipping Policy</a></li>
-                        <li><a href="#" class="text-decoration-none text-secondary small d-block mb-2" onclick="Swal.fire('Returns', 'All sales are final. We ensure paintings are securely packed before shipping.', 'info')">Returns</a></li>
-                        <li><a href="https://m.me/<?php echo $settings['messenger_id']; ?>" target="_blank" class="text-decoration-none text-secondary small d-block mb-2">Contact Us</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <h6 class="text-uppercase small fw-bold mb-4">Newsletter</h6>
-                    <p class="small text-secondary mb-3">Subscribe to receive updates on new exhibitions and limited print releases.</p>
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control border-dark" placeholder="Email address">
-                        <button class="btn btn-dark" type="button">JOIN</button>
-                    </div>
-                </div>
-            </div>
-            <hr class="my-5">
-            <p class="text-center text-secondary small"><a href="admin/index.php" class="text-decoration-none text-secondary">&copy;</a> 2026 Matthew Rillera's Studio. All Rights Reserved.</p>
-        </div>
-    </footer>
-
-    <!-- Buy Now Modal (Light Theme) -->
-    <div class="modal fade" id="buyModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content glass-modal">
-                <div class="modal-header border-0">
-                    <h5 class="modal-title" id="modalArtTitle" style="font-family: var(--font-serif);">Art Title</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <div class="row">
-                        <div class="col-md-5 mb-4">
-                            <a data-fslightbox="modal-gallery" href="">
-                                <img id="modalArtImg" src="" class="img-fluid" alt="Painting">
-                            </a>
+    <!-- Buy/Details Modal -->
+    <div class="modal fade" id="buyModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg overflow-hidden" style="border-radius: 0;">
+                <div class="modal-body p-0">
+                    <div class="row g-0">
+                        <div class="col-lg-7 bg-light">
+                            <div class="magnifier-container h-100 d-flex align-items-center justify-content-center p-3 p-md-5" id="magnifierContainer">
+                                <img src="" id="modalArtImg" class="img-fluid shadow-lg" style="max-height: 600px;">
+                                <div class="magnifier-loupe" id="magnifierLoupe"></div>
+                            </div>
                         </div>
-                        <div class="col-md-7">
-                            <div class="mb-3 mb-md-4">
-                                <h2 id="modalArtTitleInner" class="fw-bold mb-1 d-none d-md-block" style="font-family: var(--font-serif); font-size: 2rem;"></h2>
-                                <div class="d-flex align-items-center flex-wrap gap-2 mb-2 mb-md-3">
-                                    <h3 class="fw-bold text-accent m-0 modal-price-text" id="modalArtPrice">₱0.00</h3>
-                                    <span id="modalArtDetails" class="text-secondary x-small"></span>
+                        <div class="col-lg-5 p-4 p-md-5 bg-white d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-4">
+                                <div>
+                                    <h2 id="modalArtTitle" class="fw-bold mb-1" style="font-family: var(--font-serif);"></h2>
+                                    <p id="modalArtDetails" class="text-secondary small text-uppercase" style="letter-spacing: 2px;"></p>
                                 </div>
-                                <div class="bg-light p-2 p-md-3 border-start border-dark border-4">
-                                    <p id="modalArtDesc" class="text-secondary m-0 x-small" style="line-height: 1.5;"></p>
-                                </div>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
                             
-                            <hr class="my-3 my-md-4">
-                            
-                            <form id="checkoutForm">
+                            <p id="modalArtDesc" class="text-secondary mb-4" style="line-height: 1.8;"></p>
+                            <h3 id="modalArtPrice" class="fw-bold mb-4"></h3>
+
+                            <!-- Social Sharing -->
+                            <div class="d-flex gap-3 mb-4 align-items-center">
+                                <span class="small fw-bold text-uppercase" style="letter-spacing: 1px;">Share Piece:</span>
+                                <a href="#" id="shareFB" target="_blank" class="text-dark hover-scale"><i class="fab fa-facebook fa-lg"></i></a>
+                                <a href="#" id="shareMessenger" target="_blank" class="text-dark hover-scale"><i class="fab fa-facebook-messenger fa-lg"></i></a>
+                                <a href="javascript:void(0)" onclick="copyLink()" class="text-dark hover-scale"><i class="fas fa-link fa-lg"></i></a>
+                            </div>
+
+                            <form id="checkoutForm" class="mt-auto">
                                 <input type="hidden" name="artwork_id" id="checkoutArtId">
                                 <div class="mb-3">
-                                    <label class="form-label small fw-bold">Full Name</label>
-                                    <input type="text" class="form-control" name="customer_name" required placeholder="Juan Dela Cruz">
+                                    <input type="text" class="form-control rounded-0" name="customer_name" placeholder="Full Name" required>
                                 </div>
-                                <div class="row mb-3">
-                                    <div class="col">
-                                        <label class="form-label small fw-bold">Contact Number</label>
-                                        <input type="text" class="form-control" name="contact_number" required placeholder="0912 345 6789">
+                                <div class="row g-2 mb-3">
+                                    <div class="col-7">
+                                        <input type="text" class="form-control rounded-0" name="contact_number" id="trackContact" placeholder="Contact Number" required>
                                     </div>
-                                    <div class="col">
-                                        <label class="form-label small fw-bold">Payment & Delivery</label>
-                                        <select class="form-select form-control" name="payment_method" id="paymentMethod" required>
-                                            <option value="GCash">GCash (Payment First)</option>
-                                            <option value="COD">Meet-up (Cash on Delivery)</option>
+                                    <div class="col-5">
+                                        <select class="form-select rounded-0" name="payment_method" id="paymentMethod" required>
+                                            <option value="GCash">GCash</option>
+                                            <option value="COD">Meet-up</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label small fw-bold">Delivery / Meet-up Details</label>
-                                    <textarea class="form-control" name="address" rows="2" required placeholder="For Lalamove: Complete Address&#10;For Meet-up: Preferred Location (e.g. SM North)"></textarea>
-                                    <p class="x-small text-secondary mt-2"><i class="fas fa-info-circle"></i> Note: Lalamove delivery fee is shouldered by the client upon arrival.</p>
+                                    <textarea class="form-control rounded-0" name="address" rows="2" placeholder="Delivery Address / Meet-up Location" required></textarea>
                                 </div>
-
-                                <!-- GCash Section -->
-                                <div id="gcashSection" class="d-none">
-                                    <div class="alert bg-light border text-center p-4">
-                                        <p class="small mb-2 fw-bold text-danger">PAYMENT FIRST BEFORE DELIVERY</p>
-                                        <p class="small mb-3">Scan QR to pay via GCash</p>
-                                        <img src="<?php echo $settings['gcash_qr']; ?>" class="img-fluid mb-3 border" style="max-width: 180px;" alt="GCash QR">
-                                        <p class="fw-bold mb-0"><?php echo $settings['studio_name']; ?> - <?php echo $settings['contact_number']; ?></p>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label small fw-bold">Upload Receipt Screenshot</label>
-                                        <input type="file" class="form-control" name="receipt" id="receiptInput">
-                                    </div>
+                                <div id="gcashSection" class="mb-3 p-3 border text-center">
+                                    <p class="small mb-2">Scan to Pay via GCash</p>
+                                    <img src="<?php echo $settings['gcash_qr']; ?>" class="img-fluid mb-2" style="max-width: 150px;">
+                                    <input type="file" class="form-control form-control-sm rounded-0" name="receipt" id="receiptInput">
                                 </div>
-
-                                <div id="negotiablePriceSection" class="d-none mb-3">
-                                    <label class="form-label small fw-bold text-accent">Proposed Offer (PHP)</label>
-                                    <input type="number" class="form-control border-accent" name="proposed_price" placeholder="Enter your offer...">
-                                    <p class="x-small text-secondary mt-1">Note: This is subject to artist approval.</p>
-                                </div>
-
-                                <button type="submit" class="btn btn-gallery w-100 mt-3" id="btnPlaceOrder">Secure Order</button>
-                                <a href="https://m.me/<?php echo $settings['messenger_id']; ?>" target="_blank" class="btn btn-outline-dark w-100 mt-2 d-none" id="btnNegotiate">
-                                    <i class="fab fa-facebook-messenger me-2"></i> Chat to Negotiate
-                                </a>
+                                <button type="submit" class="btn btn-dark w-100 py-3 rounded-0 fw-bold" id="btnPlaceOrder">PLACE ORDER</button>
                             </form>
                         </div>
                     </div>
@@ -266,22 +208,20 @@ foreach ($settings_raw as $s) {
     </div>
 
     <!-- Track Order Modal -->
-    <div class="modal fade" id="trackModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="trackOrderModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content glass-modal">
-                <div class="modal-header border-0">
-                    <h5 class="modal-title" style="font-family: var(--font-serif);">Track My Order</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-4">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+                <div class="modal-body p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <h4 class="fw-bold">Track My Order</h4>
+                        <p class="text-secondary small">Enter your contact number to see your order status.</p>
+                    </div>
                     <form id="trackForm">
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-uppercase" style="letter-spacing: 1px;">Contact Number</label>
-                            <input type="text" class="form-control" name="contact_number" id="trackContact" placeholder="e.g. 0912 345 6789" required>
+                            <input type="text" id="trackContact" class="form-control form-control-lg text-center rounded-pill" placeholder="e.g. 09123456789" required>
                         </div>
-                        <button type="submit" class="btn btn-gallery w-100">Find My Order</button>
+                        <button type="submit" class="btn btn-dark w-100 py-3 rounded-pill fw-bold">TRACK NOW</button>
                     </form>
-
                     <div id="trackResult" class="mt-4 d-none">
                         <hr>
                         <div id="orderList"></div>
@@ -290,6 +230,112 @@ foreach ($settings_raw as $s) {
             </div>
         </div>
     </div>
+
+    <!-- Verify COA Modal -->
+    <div class="modal fade" id="verifyCOAModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+                <div class="modal-body p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-shield-alt fa-3x mb-3 text-dark"></i>
+                        <h4 class="fw-bold">Verify Authenticity</h4>
+                        <p class="text-secondary small">Enter the Certificate of Authenticity (COA) serial number.</p>
+                    </div>
+                    <form id="verifyForm">
+                        <div class="mb-3">
+                            <input type="text" name="coa_number" class="form-control form-control-lg text-center rounded-pill" placeholder="e.g. COA-12345-6789" required>
+                        </div>
+                        <button type="submit" class="btn btn-dark w-100 py-3 rounded-pill fw-bold">VERIFY PIECE</button>
+                    </form>
+                    <div id="verifyResult" class="mt-4 d-none"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Commission Modal -->
+    <div class="modal fade" id="commissionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+                <div class="modal-body p-0 overflow-hidden">
+                    <div class="row g-0">
+                        <div class="col-md-5 d-none d-md-block" style="background: url('assets/img/hero.png') center/cover;">
+                            <div class="h-100 w-100 bg-dark bg-opacity-25 d-flex align-items-end p-4 text-white">
+                                <div>
+                                    <h3 class="fw-bold">Custom Vision</h3>
+                                    <p class="small mb-0">Let's turn your idea into a timeless masterpiece.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-7 p-4 p-md-5">
+                            <h4 class="fw-bold mb-4">Request a Commission</h4>
+                            <form id="commissionForm">
+                                <div class="mb-3">
+                                    <input type="text" name="customer_name" class="form-control" placeholder="Your Name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <input type="text" name="contact_number" class="form-control" placeholder="Contact Number" required>
+                                </div>
+                                <div class="mb-3">
+                                    <input type="text" name="subject" class="form-control" placeholder="Project Subject (e.g. Family Portrait)" required>
+                                </div>
+                                <div class="mb-3">
+                                    <textarea name="description" class="form-control" rows="4" placeholder="Describe your vision (size, medium, additional details...)" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-dark w-100 py-3 rounded-pill fw-bold">SEND REQUEST</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white pt-5 pb-4 mt-5">
+        <div class="container">
+            <div class="row g-4 mb-5">
+                <div class="col-lg-4">
+                    <h5 class="fw-bold mb-4" style="font-family: var(--font-serif);">Matthew Rillera</h5>
+                    <p class="small text-secondary" style="line-height: 1.8;">Original hand-painted artworks for the modern collector. Every piece comes with a signed Certificate of Authenticity.</p>
+                    <div class="d-flex gap-3 mt-4">
+                        <a href="https://www.facebook.com/profile.php?id=100068728255359" target="_blank" class="text-secondary hover-white"><i class="fab fa-facebook fa-lg"></i></a>
+                        <a href="mailto:johnmatthewrillera@gmail.com" class="text-secondary hover-white"><i class="fas fa-envelope fa-lg"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <h6 class="fw-bold mb-4 small text-uppercase" style="letter-spacing: 2px;">Quick Links</h6>
+                    <ul class="list-unstyled small text-secondary">
+                        <li class="mb-2"><a href="#gallery" class="text-decoration-none text-secondary hover-white">Gallery</a></li>
+                        <li class="mb-2"><a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#commissionModal" class="text-decoration-none text-secondary hover-white">Commissions</a></li>
+                        <li class="mb-2"><a href="portal.php" class="text-decoration-none text-secondary hover-white">Collector Access</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <h6 class="fw-bold mb-4 small text-uppercase" style="letter-spacing: 2px;">Information</h6>
+                    <ul class="list-unstyled small text-secondary">
+                        <li class="mb-2">Shipping & Delivery</li>
+                        <li class="mb-2">Terms of Service</li>
+                        <li class="mb-2">Privacy Policy</li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <h6 class="fw-bold mb-4 small text-uppercase" style="letter-spacing: 2px;">Studio Location</h6>
+                    <p class="small text-secondary mb-2">Quezon City / Metro Manila, Philippines</p>
+                    <p class="small text-secondary mb-0">Contact: 0956 993 2911</p>
+                </div>
+            </div>
+            <hr class="border-secondary opacity-25">
+            <div class="text-center pt-3">
+                <p class="x-small text-secondary mb-0"><a href="admin/login.php" class="text-decoration-none text-secondary">&copy;</a> 2026 Matthew Rillera's Studio. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Floating Messenger FAB -->
+    <a href="https://www.messenger.com/t/100068728255359" target="_blank" class="messenger-fab">
+        <i class="fab fa-facebook-messenger"></i>
+    </a>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

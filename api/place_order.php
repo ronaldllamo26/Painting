@@ -2,6 +2,14 @@
 header('Content-Type: application/json');
 require_once '../config/db_config.php';
 
+// CSRF Verification
+$headers = getallheaders();
+$csrfToken = $headers['X-CSRF-Token'] ?? '';
+if (!verifyCSRF($csrfToken)) {
+    echo json_encode(['status' => 'error', 'message' => 'Invalid CSRF token. Request denied.']);
+    exit();
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $artwork_id = $_POST['artwork_id'];
     $name = $_POST['customer_name'];
@@ -25,13 +33,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // 2. Handle Receipt Upload if GCash
         if ($payment === 'GCash' && isset($_FILES['receipt'])) {
-            $targetDir = "../uploads/receipts/";
-            if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
+            $file = $_FILES['receipt'];
+            $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
             
-            $fileName = time() . '_' . basename($_FILES["receipt"]["name"]);
+            // Validate extension
+            if (!in_array($fileExtension, $allowedExtensions)) {
+                throw new Exception("Invalid file type. Only images are allowed.");
+            }
+
+            // Validate MIME type
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mimeType = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+            if (strpos($mimeType, 'image/') !== 0) {
+                throw new Exception("File is not a valid image.");
+            }
+
+            $targetDir = "../uploads/receipts/";
+            if (!is_dir($targetDir)) mkdir($targetDir, 0755, true); // More secure permissions
+            
+            $fileName = time() . '_' . bin2hex(random_bytes(8)) . '.' . $fileExtension; // More unique name
             $targetFilePath = $targetDir . $fileName;
             
-            if (move_uploaded_file($_FILES["receipt"]["tmp_name"], $targetFilePath)) {
+            if (move_uploaded_file($file["tmp_name"], $targetFilePath)) {
                 $receipt_url = 'uploads/receipts/' . $fileName;
             } else {
                 throw new Exception("Failed to upload receipt.");

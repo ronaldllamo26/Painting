@@ -76,9 +76,10 @@ $studioName = $stmt->fetchColumn() ?: "Artist Studio";
         <small class="text-secondary">Admin Access</small>
     </div>
     <nav class="nav flex-column">
-        <a class="nav-link" href="../index.php" target="_blank"><i class="fas fa-external-link-alt"></i> View Gallery</a>
-        <a class="nav-link <?php echo $current_page == 'index.php' ? 'active' : ''; ?>" href="index.php"><i class="fas fa-chart-line"></i> Dashboard</a>
+        <a class="nav-link" href="../index.php"><i class="fas fa-external-link-alt"></i> View Gallery</a>
+        <a class="nav-link <?php echo ($current_page == 'index.php' || $current_page == 'edit_artwork.php') ? 'active' : ''; ?>" href="index.php"><i class="fas fa-chart-line"></i> Dashboard</a>
         <a class="nav-link <?php echo $current_page == 'upload.php' ? 'active' : ''; ?>" href="upload.php"><i class="fas fa-plus-circle"></i> Upload Art</a>
+        <a class="nav-link <?php echo $current_page == 'commissions.php' ? 'active' : ''; ?>" href="commissions.php"><i class="fas fa-palette"></i> Commissions</a>
         <a class="nav-link <?php echo $current_page == 'settings.php' ? 'active' : ''; ?>" href="settings.php"><i class="fas fa-cog"></i> Settings</a>
         <a class="nav-link text-danger mt-5" href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </nav>

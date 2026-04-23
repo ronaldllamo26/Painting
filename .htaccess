@@ -1,0 +1,18 @@
+# Force HTTPS (ENABLE THIS ONLY WHEN DEPLOYED TO LIVE SERVER)
+# RewriteEngine On
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Prevent Directory Browsing
+Options -Indexes
+
+# Protect sensitive files
+<Files ".env">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files "config/db_config.php">
+    Order allow,deny
+    Deny from all
+</Files>

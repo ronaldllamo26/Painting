@@ -3,7 +3,15 @@ header('Content-Type: application/json');
 require_once '../config/db_config.php';
 session_start();
 
-if (!isset($_SESSION['admin_id'])) {
+// CSRF Verification
+$headers = getallheaders();
+$csrfToken = $headers['X-CSRF-Token'] ?? '';
+if (!verifyCSRF($csrfToken)) {
+    echo json_encode(['status' => 'error', 'message' => 'Invalid CSRF token.']);
+    exit();
+}
+
+if (!isset($_SESSION['admin_logged_in'])) {
     echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
     exit();
 }
@@ -30,13 +38,19 @@ if (isset($data['order_id']) && isset($data['status'])) {
         $stmt = $pdo->prepare("UPDATE orders SET order_status = ? WHERE id = ?");
         $stmt->execute([$new_status, $order_id]);
 
-        // Update Artwork Status
+        // Update Artwork Status & Generate COA if Approved
         if ($new_status === 'Approved') {
             $stmt = $pdo->prepare("UPDATE artworks SET status = 'Sold' WHERE id = ?");
+            $stmt->execute([$artwork_id]);
+
+            // Generate unique COA: MR-YEAR-ORDERID-RANDOM
+            $coa = "MR-" . date('Y') . "-" . str_pad($order_id, 4, '0', STR_PAD_LEFT) . "-" . strtoupper(bin2hex(random_bytes(2)));
+            $stmt = $pdo->prepare("UPDATE orders SET coa_number = ? WHERE id = ?");
+            $stmt->execute([$coa, $order_id]);
         } else {
             $stmt = $pdo->prepare("UPDATE artworks SET status = 'Available' WHERE id = ?");
+            $stmt->execute([$artwork_id]);
         }
-        $stmt->execute([$artwork_id]);
 
         $pdo->commit();
         echo json_encode(['status' => 'success']);

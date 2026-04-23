@@ -3,6 +3,14 @@ session_start();
 header('Content-Type: application/json');
 require_once '../config/db_config.php';
 
+// CSRF Verification
+$headers = getallheaders();
+$csrfToken = $headers['X-CSRF-Token'] ?? '';
+if (!verifyCSRF($csrfToken)) {
+    echo json_encode(['status' => 'error', 'message' => 'Invalid CSRF token.']);
+    exit();
+}
+
 if (!isset($_SESSION['admin_logged_in'])) {
     echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
     exit;
@@ -56,6 +64,17 @@ elseif ($action === 'update_password') {
         $stmt = $pdo->prepare("UPDATE admin SET password = ? WHERE username = ?");
         $stmt->execute([$hashed_pass, $_SESSION['admin_user']]);
         
+        echo json_encode(['status' => 'success']);
+    } catch (Exception $e) {
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    }
+}
+
+elseif ($action === 'update_ai') {
+    $apiKey = $_POST['openai_api_key'] ?? '';
+    try {
+        $stmt = $pdo->prepare("INSERT INTO settings (setting_key, setting_value) VALUES ('openai_api_key', ?) ON DUPLICATE KEY UPDATE setting_value = ?");
+        $stmt->execute([$apiKey, $apiKey]);
         echo json_encode(['status' => 'success']);
     } catch (Exception $e) {
         echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);

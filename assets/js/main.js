@@ -8,11 +8,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const trackForm = document.getElementById('trackForm');
     const trackResult = document.getElementById('trackResult');
     const orderList = document.getElementById('orderList');
+    const verifyForm = document.getElementById('verifyForm');
+    const verifyResult = document.getElementById('verifyResult');
     
     let allArtworks = [];
     let filteredArtworks = [];
     let currentPage = 1;
     const itemsPerPage = 6;
+
+    // Security: XSS Sanitization
+    const sanitizeHTML = (str) => {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    };
 
     // Fetch Artworks
     async function fetchArtworks() {
@@ -22,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (result.status === 'success') {
                 allArtworks = result.data;
-                filteredArtworks = [...allArtworks]; // Initial state
+                filteredArtworks = [...allArtworks];
                 renderGallery(filteredArtworks);
                 renderFilters(result.tags);
             }
@@ -45,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Slice artworks for current page
         const startIndex = (currentPage - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
         const paginatedItems = artworks.slice(startIndex, endIndex);
@@ -53,108 +61,78 @@ document.addEventListener('DOMContentLoaded', () => {
         paginatedItems.forEach(art => {
             const isSold = art.status === 'Sold';
             const isPending = art.status === 'Pending';
+            const statusBadge = isSold ? '<div class="sold-overlay">SOLD</div>' : (isPending ? '<div class="pending-overlay">PENDING</div>' : '');
             
-            const card = `
-                <div class="col-lg-4 col-md-6 artwork-item animate__animated animate__fadeIn">
-                    <div class="glass-card">
-                        <div class="artwork-img-container">
-                            <a data-fslightbox="gallery" href="${art.image_url}">
-                                <img src="${art.image_url}" class="artwork-img" alt="${art.title}">
-                            </a>
-                            ${isSold ? '<div class="sold-overlay">SOLD</div>' : ''}
-                            ${isPending ? '<div class="pending-overlay">PENDING</div>' : ''}
-                        </div>
-                        <div class="artwork-info">
-                            <h3 class="artwork-title">${art.title}</h3>
-                            <p class="artwork-meta">${art.size} | ${art.medium}</p>
-                            <p class="artwork-price">₱${parseFloat(art.price).toLocaleString()} ${art.is_negotiable == 1 ? '<small class="text-secondary fw-normal fs-6">(negotiable)</small>' : ''}</p>
-                            <button class="btn-gallery" onclick="viewDetails(${art.id})">
-                                ${isSold ? 'View Details' : 'Buy Now'}
-                            </button>
-                        </div>
+            const card = document.createElement('div');
+            card.className = 'col-lg-4 col-md-6 artwork-item animate__animated animate__fadeIn';
+            
+            card.innerHTML = `
+                <div class="artwork-card glass-card h-100">
+                    <div class="artwork-img-container" onclick="viewDetails(${art.id})">
+                        <img src="${art.image_url}" class="artwork-img" alt="${art.title}" loading="lazy">
+                        ${statusBadge}
+                    </div>
+                    <div class="artwork-info text-center">
+                        <h5 class="artwork-title fw-bold" style="font-family: var(--font-serif);">${sanitizeHTML(art.title)}</h5>
+                        <p class="text-secondary x-small mb-2 text-uppercase" style="letter-spacing: 2px;">${art.size} | ${art.medium}</p>
+                        <p class="artwork-price fw-bold mb-3">₱${parseFloat(art.price).toLocaleString()}</p>
+                        <button class="btn btn-dark w-100 rounded-0 py-2 small fw-bold" onclick="viewDetails(${art.id})">VIEW DETAILS</button>
                     </div>
                 </div>
             `;
-            galleryContainer.innerHTML += card;
+            galleryContainer.appendChild(card);
         });
         
         renderPagination(totalPages);
-
-        // Refresh Lightbox
-        if (typeof refreshFsLightbox === 'function') {
-            refreshFsLightbox();
-        }
     }
 
-    // Render Pagination Buttons
+    // Render Pagination
     function renderPagination(totalPages) {
         const container = document.getElementById('paginationContainer');
         container.innerHTML = '';
-
         if (totalPages <= 1) return;
 
-        const scrollToGallery = () => {
-            const gallerySection = document.getElementById('gallery');
-            const offset = 100; // Offset for the fixed navbar
-            const bodyRect = document.body.getBoundingClientRect().top;
-            const elementRect = gallerySection.getBoundingClientRect().top;
-            const elementPosition = elementRect - bodyRect;
-            const offsetPosition = elementPosition - offset;
+        const ul = document.createElement('ul');
+        ul.className = 'pagination gap-2';
 
-            window.scrollTo({
-                top: offsetPosition,
-                behavior: 'smooth'
-            });
-        };
-
-        // Previous Button
+        // Previous Arrow
         const prevLi = document.createElement('li');
         prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
-        prevLi.innerHTML = `<a class="page-link" href="javascript:void(0)" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>`;
-        prevLi.onclick = (e) => { 
-            if(currentPage > 1) { 
-                currentPage--; 
-                renderGallery(filteredArtworks); 
-                scrollToGallery();
-            } 
-        };
-        container.appendChild(prevLi);
+        prevLi.innerHTML = `<a class="page-link shadow-sm" href="javascript:void(0)"><i class="fas fa-chevron-left"></i></a>`;
+        if (currentPage > 1) {
+            prevLi.onclick = () => { currentPage--; renderGallery(filteredArtworks); scrollUp(); };
+        }
+        ul.appendChild(prevLi);
 
-        // Page Numbers
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement('li');
             li.className = `page-item ${currentPage === i ? 'active' : ''}`;
-            li.innerHTML = `<a class="page-link" href="javascript:void(0)">${i}</a>`;
-            li.onclick = (e) => { 
-                e.preventDefault();
-                currentPage = i; 
-                renderGallery(filteredArtworks); 
-                scrollToGallery();
-            };
-            container.appendChild(li);
+            li.innerHTML = `<a class="page-link shadow-sm" href="javascript:void(0)">${i}</a>`;
+            li.onclick = () => { currentPage = i; renderGallery(filteredArtworks); scrollUp(); };
+            ul.appendChild(li);
         }
 
-        // Next Button
+        // Next Arrow
         const nextLi = document.createElement('li');
         nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
-        nextLi.innerHTML = `<a class="page-link" href="javascript:void(0)" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>`;
-        nextLi.onclick = (e) => { 
-            if(currentPage < totalPages) { 
-                currentPage++; 
-                renderGallery(filteredArtworks); 
-                scrollToGallery();
-            } 
-        };
-        container.appendChild(nextLi);
+        nextLi.innerHTML = `<a class="page-link shadow-sm" href="javascript:void(0)"><i class="fas fa-chevron-right"></i></a>`;
+        if (currentPage < totalPages) {
+            nextLi.onclick = () => { currentPage++; renderGallery(filteredArtworks); scrollUp(); };
+        }
+        ul.appendChild(nextLi);
+
+        container.appendChild(ul);
+    }
+
+    function scrollUp() {
+        window.scrollTo({top: document.getElementById('gallery').offsetTop - 100, behavior: 'smooth'});
     }
 
     // Render Filters
     function renderFilters(tags) {
-        // Handle the initial "All Artworks" button
-        const allBtn = document.querySelector('.filter-btn[data-filter="all"]');
-        if (allBtn) {
-            allBtn.onclick = () => filterByTag('all', allBtn);
-        }
+        tagFilters.innerHTML = '<button class="filter-btn active" data-filter="all">All Pieces</button>';
+        const allBtn = tagFilters.querySelector('[data-filter="all"]');
+        allBtn.onclick = () => filterByTag('all', allBtn);
 
         tags.forEach(tag => {
             const btn = document.createElement('button');
@@ -165,72 +143,57 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Filter Logic
     window.filterByTag = (tag, btn) => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        currentPage = 1; // Reset to page 1 on filter
+        currentPage = 1;
 
         if (tag === 'all') {
             filteredArtworks = [...allArtworks];
         } else {
             filteredArtworks = allArtworks.filter(art => {
                 if (!art.ai_tags) return false;
-                const tagsArray = art.ai_tags.split(',').map(t => t.trim().toLowerCase());
-                return tagsArray.includes(tag.toLowerCase());
+                return art.ai_tags.toLowerCase().split(',').map(t => t.trim()).includes(tag.toLowerCase());
             });
         }
         renderGallery(filteredArtworks);
     };
 
-    // View Details & Buy
+    // View Details & Sharing
     window.viewDetails = (id) => {
         const art = allArtworks.find(a => a.id == id);
         if (!art) return;
 
         document.getElementById('modalArtTitle').textContent = art.title;
         document.getElementById('modalArtImg').src = art.image_url;
-        document.getElementById('modalArtImg').parentElement.href = art.image_url; // Update link href
-        document.getElementById('modalArtPrice').innerHTML = `₱${parseFloat(art.price).toLocaleString()} ${art.is_negotiable ? '<small class="text-secondary fw-normal fs-6">(negotiable)</small>' : ''}`;
+        document.getElementById('modalArtPrice').textContent = `₱${parseFloat(art.price).toLocaleString()}`;
         document.getElementById('modalArtDetails').textContent = `${art.size} | ${art.medium}`;
         document.getElementById('modalArtDesc').textContent = art.ai_description;
         document.getElementById('checkoutArtId').value = art.id;
 
-        // Reset and show modal
+        // Social Share Links
+        const shareUrl = encodeURIComponent(window.location.origin + window.location.pathname + '?art=' + id);
+        document.getElementById('shareFB').href = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`;
+        document.getElementById('shareMessenger').href = `fb-messenger://share/?link=${shareUrl}`;
+
         checkoutForm.reset();
-        
-        // Default behavior for GCash (since it's now first in select)
-        if (paymentMethod.value === 'GCash') {
-            gcashSection.classList.remove('d-none');
-        } else {
-            gcashSection.classList.add('d-none');
-        }
+        paymentMethod.dispatchEvent(new Event('change'));
         
         if (art.status !== 'Available') {
             document.getElementById('btnPlaceOrder').style.display = 'none';
-            document.getElementById('btnNegotiate').classList.add('d-none');
-            document.getElementById('negotiablePriceSection').classList.add('d-none');
         } else {
             document.getElementById('btnPlaceOrder').style.display = 'block';
-            if (art.is_negotiable == 1) {
-                document.getElementById('btnNegotiate').classList.remove('d-none');
-                document.getElementById('negotiablePriceSection').classList.remove('d-none');
-            } else {
-                document.getElementById('btnNegotiate').classList.add('d-none');
-                document.getElementById('negotiablePriceSection').classList.add('d-none');
-            }
         }
 
-        const modal = new bootstrap.Modal(document.getElementById('buyModal'));
-        modal.show();
-
-        // Refresh Lightbox specifically for modal
-        if (typeof refreshFsLightbox === 'function') {
-            refreshFsLightbox();
-        }
+        new bootstrap.Modal(document.getElementById('buyModal')).show();
     };
 
-    // Toggle GCash Section
+    window.copyLink = () => {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            Swal.fire({ icon: 'success', title: 'Link Copied', timer: 1500, showConfirmButton: false });
+        });
+    };
+
     paymentMethod.addEventListener('change', (e) => {
         if (e.target.value === 'GCash') {
             gcashSection.classList.remove('d-none');
@@ -239,100 +202,169 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Handle Checkout
-    checkoutForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    // Cart Logic
+    window.cart = JSON.parse(localStorage.getItem('art_cart')) || [];
+
+    window.openCart = () => {
+        const list = document.getElementById('cartItemsList');
+        const empty = document.getElementById('cartEmptyMsg');
+        list.innerHTML = '';
         
-        const formData = new FormData(checkoutForm);
-        
-        // Validation for GCash
-        if (paymentMethod.value === 'GCash' && !document.getElementById('receiptInput').files[0]) {
-            Swal.fire('Error', 'Please upload your GCash receipt screenshot.', 'error');
+        if (window.cart.length === 0) {
+            empty.classList.remove('d-none');
+        } else {
+            empty.classList.add('d-none');
+            window.cart.forEach((item, index) => {
+                list.innerHTML += `
+                    <div class="d-flex align-items-center mb-3 p-2 border rounded">
+                        <img src="${item.image_url}" style="width: 50px; height: 50px; object-fit: cover;" class="me-3 rounded">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0 small fw-bold">${sanitizeHTML(item.title)}</h6>
+                            <p class="mb-0 x-small text-secondary">₱${parseFloat(item.price).toLocaleString()}</p>
+                        </div>
+                        <button class="btn btn-sm text-danger" onclick="removeFromCart(${index})"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+            });
+        }
+        new bootstrap.Modal(document.getElementById('cartModal')).show();
+    };
+
+    window.addToCartById = (id) => {
+        const art = allArtworks.find(a => a.id == id);
+        if (!art) return;
+        if (window.cart.some(item => item.id === art.id)) {
+            Swal.fire('Info', 'Already in your bag.', 'info');
             return;
         }
+        window.cart.push(art);
+        localStorage.setItem('art_cart', JSON.stringify(window.cart));
+        window.updateCartUI();
+        Swal.fire({ icon: 'success', title: 'Added to Bag', timer: 1000, showConfirmButton: false });
+    };
 
+    window.removeFromCart = (index) => {
+        window.cart.splice(index, 1);
+        localStorage.setItem('art_cart', JSON.stringify(window.cart));
+        window.updateCartUI();
+        window.openCart(); // Refresh modal
+    };
+
+    window.updateCartUI = () => {
+        const counts = document.querySelectorAll('.cart-count');
+        counts.forEach(el => el.textContent = window.cart.length);
+    };
+
+    // Commission Form
+    const commissionForm = document.getElementById('commissionForm');
+    if (commissionForm) {
+        commissionForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(commissionForm);
+            try {
+                const response = await fetch('api/request_commission.php', { 
+                    method: 'POST', 
+                    headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content },
+                    body: formData 
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    Swal.fire('Sent!', result.message, 'success').then(() => {
+                        bootstrap.Modal.getInstance(document.getElementById('commissionModal')).hide();
+                        commissionForm.reset();
+                    });
+                } else { Swal.fire('Error', result.message, 'error'); }
+            } catch (err) { Swal.fire('Error', 'Failed to send request.', 'error'); }
+        };
+    }
+
+    // Forms Logic
+    checkoutForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(checkoutForm);
         try {
-            const response = await fetch('api/place_order.php', {
-                method: 'POST',
-                body: formData
+            const response = await fetch('api/place_order.php', { 
+                method: 'POST', 
+                headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content },
+                body: formData 
             });
             const result = await response.json();
-
             if (result.status === 'success') {
-                bootstrap.Modal.getInstance(document.getElementById('buyModal')).hide();
-                Swal.fire({
-                    title: 'Order Placed!',
-                    text: 'The artist will review your order shortly.',
-                    icon: 'success'
-                }).then(() => {
-                    location.reload();
-                });
-            } else {
-                Swal.fire('Error', result.message, 'error');
-            }
-        } catch (error) {
-            Swal.fire('Error', 'Something went wrong.', 'error');
-        }
+                Swal.fire('Success!', 'Order placed successfully.', 'success').then(() => location.reload());
+            } else { Swal.fire('Error', result.message, 'error'); }
+        } catch (err) { Swal.fire('Error', 'Submission failed.', 'error'); }
     });
 
-    // Live Search
-    navbarSearch.addEventListener('input', (e) => {
-        const query = e.target.value.toLowerCase();
-        const filtered = allArtworks.filter(art => 
-            art.title.toLowerCase().includes(query) || 
-            (art.ai_tags && art.ai_tags.toLowerCase().includes(query)) ||
-            art.medium.toLowerCase().includes(query)
-        );
-        renderGallery(filtered);
-    });
-
-    // Track Order
     trackForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const contact = document.getElementById('trackContact').value;
-        
         try {
-            const response = await fetch('api/track_order.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `contact_number=${encodeURIComponent(contact)}`
+            const response = await fetch('api/track_order.php', { 
+                method: 'POST', 
+                headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content },
+                body: new URLSearchParams({contact_number: contact}) 
             });
             const result = await response.json();
-
             if (result.status === 'success') {
                 trackResult.classList.remove('d-none');
-                orderList.innerHTML = '';
-                
-                result.data.forEach(order => {
-                    const statusColor = order.order_status === 'Approved' ? 'text-success' : (order.order_status === 'Cancelled' ? 'text-danger' : 'text-warning');
-                    const item = `
-                        <div class="d-flex align-items-center mb-3 p-2 border-bottom">
-                            <img src="${order.image_url}" style="width: 50px; height: 50px; object-fit: cover;" class="me-3">
-                            <div class="flex-grow-1">
-                                <h6 class="mb-0 small fw-bold">${order.artwork_title}</h6>
-                                <p class="mb-0 x-small text-secondary">Ordered on: ${new Date(order.order_date).toLocaleDateString()}</p>
-                            </div>
-                            <div class="text-end">
-                                <span class="badge ${statusColor.replace('text-', 'bg-')} small">${order.order_status}</span>
-                            </div>
-                        </div>
-                    `;
-                    orderList.innerHTML += item;
-                });
-            } else {
-                Swal.fire('Error', result.message, 'error');
-                trackResult.classList.add('d-none');
-            }
-        } catch (error) {
-            Swal.fire('Error', 'Failed to track order.', 'error');
-        }
+                orderList.innerHTML = result.data.map(o => `
+                    <div class="d-flex align-items-center mb-3 p-2 border-bottom">
+                        <img src="${o.art_img}" style="width: 50px; height: 50px; object-fit: cover;" class="me-3 rounded">
+                        <div class="flex-grow-1"><h6 class="mb-0 small fw-bold">${sanitizeHTML(o.art_title)}</h6><p class="mb-0 x-small text-secondary">${o.order_status}</p></div>
+                    </div>`).join('');
+            } else { Swal.fire('Error', result.message, 'error'); }
+        } catch (err) { Swal.fire('Error', 'Tracking failed.', 'error'); }
     });
 
-    // Secret Admin Shortcut (Alt + Shift + A)
+    verifyForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const formData = new FormData(verifyForm);
+        try {
+            const response = await fetch('api/verify_coa.php', { 
+                method: 'POST', 
+                headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content },
+                body: formData 
+            });
+            const result = await response.json();
+            verifyResult.classList.remove('d-none');
+            if (result.status === 'success') {
+                verifyResult.innerHTML = `
+                    <div class="alert alert-success">
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="${result.data.img}" style="width: 60px; height: 60px; object-fit: cover;" class="rounded">
+                            <div>
+                                <div class="fw-bold">Verified Genuine: ${result.data.title}</div>
+                                <div class="x-small">Collector: ${result.data.collector}</div>
+                                <div class="x-small text-secondary">${result.data.specs}</div>
+                            </div>
+                        </div>
+                    </div>`;
+            } else { verifyResult.innerHTML = `<div class="alert alert-danger text-center">${result.message}</div>`; }
+        } catch (err) { verifyResult.innerHTML = `<div class="alert alert-danger text-center">Failed to verify.</div>`; }
+    };
+
+    // Magnifier Logic
+    const magnifierContainer = document.getElementById('magnifierContainer');
+    const modalArtImg = document.getElementById('modalArtImg');
+    const magnifierLoupe = document.getElementById('magnifierLoupe');
+    if (magnifierContainer && modalArtImg && magnifierLoupe) {
+        magnifierContainer.onmousemove = (e) => {
+            const rect = magnifierContainer.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            magnifierLoupe.style.display = 'block';
+            magnifierLoupe.style.left = (x - 75) + 'px';
+            magnifierLoupe.style.top = (y - 75) + 'px';
+            magnifierLoupe.style.backgroundImage = `url(${modalArtImg.src})`;
+            magnifierLoupe.style.backgroundSize = (rect.width * 2) + 'px ' + (rect.height * 2) + 'px';
+            magnifierLoupe.style.backgroundPosition = `-${(x * 2) - 75}px -${(y * 2) - 75}px`;
+        };
+        magnifierContainer.onmouseleave = () => magnifierLoupe.style.display = 'none';
+    }
+
+    // Secret Admin Shortcut
     document.addEventListener('keydown', (e) => {
-        if (e.altKey && e.shiftKey && e.code === 'KeyA') {
-            window.location.href = 'admin/index.php';
-        }
+        if (e.altKey && e.shiftKey && e.code === 'KeyA') window.location.href = 'admin/index.php';
     });
 
     fetchArtworks();

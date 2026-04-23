@@ -24,6 +24,8 @@ require_once '../config/db_config.php';
         .tag-sug:hover { background: #000 !important; color: #fff !important; }
         .form-label { font-weight: 600; font-size: 0.75rem; color: #4e73df; text-transform: uppercase; letter-spacing: 0.5px; }
     </style>
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="<?php echo $_SESSION['csrf_token']; ?>">
 </head>
 <body>
     <div class="loading-overlay" id="loadingOverlay">
@@ -49,7 +51,7 @@ require_once '../config/db_config.php';
                         <div class="row g-0">
                             <!-- Left Side: Form -->
                             <div class="col-md-7 p-4 p-md-5 border-end">
-                                <form id="uploadForm">
+                                <form id="uploadForm" enctype="multipart/form-data">
                                     <div class="mb-4">
                                         <label class="form-label">Painting Title</label>
                                         <input type="text" name="title" class="form-control form-control-lg border-light bg-light" required placeholder="Enter title...">
@@ -142,19 +144,31 @@ require_once '../config/db_config.php';
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        const imageInput = document.getElementById('imageInput');
-        const imagePreview = document.getElementById('imagePreview');
-        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
-        const btnAnalyze = document.getElementById('btnAnalyze');
-        const btnSave = document.getElementById('btnSave');
-        const aiSection = document.getElementById('aiSection');
-        const aiEmptyState = document.getElementById('aiEmptyState');
-        const loadingOverlay = document.getElementById('loadingOverlay');
+        // Use a more robust way to get elements
+        const getEl = (id) => document.getElementById(id);
+        
+        const uploadForm = getEl('uploadForm');
+        const imageInput = getEl('imageInput');
+        const imagePreview = getEl('imagePreview');
+        const uploadPlaceholder = getEl('uploadPlaceholder');
+        const btnAnalyze = getEl('btnAnalyze');
+        const btnSave = getEl('btnSave');
+        const aiSection = getEl('aiSection');
+        const aiEmptyState = getEl('aiEmptyState');
+        const loadingOverlay = getEl('loadingOverlay');
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+
+        if (!csrfToken) {
+            console.error("CSRF token missing from meta tags.");
+        }
 
         function addTag(tag) {
-            const input = document.getElementById('aiTags');
+            const input = getEl('aiTags');
             let currentTags = input.value.split(',').map(t => t.trim()).filter(t => t !== "");
-            if (!currentTags.includes(tag)) { currentTags.push(tag); input.value = currentTags.join(', '); }
+            if (!currentTags.includes(tag)) { 
+                currentTags.push(tag); 
+                input.value = currentTags.join(', '); 
+            }
         }
 
         imageInput.onchange = evt => {
@@ -167,39 +181,68 @@ require_once '../config/db_config.php';
         }
 
         btnAnalyze.onclick = async () => {
-            if(!document.getElementById('uploadForm').checkValidity()) { document.getElementById('uploadForm').reportValidity(); return; }
+            console.log("Analyze button clicked.");
+            if(!uploadForm.checkValidity()) { 
+                uploadForm.reportValidity(); 
+                return; 
+            }
+            
             loadingOverlay.style.display = 'flex';
-            const formData = new FormData(document.getElementById('uploadForm'));
+            const formData = new FormData(uploadForm);
+            
             try {
-                const response = await fetch('process_ai.php', { method: 'POST', body: formData });
+                const response = await fetch('process_ai.php', { 
+                    method: 'POST', 
+                    headers: { 'X-CSRF-Token': csrfToken },
+                    body: formData 
+                });
+                
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
                 const result = await response.json();
+                console.log("AI Result:", result);
+
                 if (result.status === 'success') {
-                    document.getElementById('aiDesc').value = result.description;
-                    document.getElementById('aiTags').value = result.tags;
+                    getEl('aiDesc').value = result.description;
+                    getEl('aiTags').value = result.tags;
                     
-                    // Add hidden fields for Cloudinary if not already there
-                    if(!document.querySelector('input[name="cloudinary_url"]')) {
-                        const cUrl = document.createElement('input'); cUrl.type = 'hidden'; cUrl.name = 'cloudinary_url';
-                        const cId = document.createElement('input'); cId.type = 'hidden'; cId.name = 'cloudinary_id';
-                        document.getElementById('uploadForm').appendChild(cUrl); document.getElementById('uploadForm').appendChild(cId);
+                    // Hidden fields for Cloudinary/Local Path
+                    let cUrl = document.querySelector('input[name="cloudinary_url"]');
+                    let cId = document.querySelector('input[name="cloudinary_id"]');
+                    
+                    if(!cUrl) {
+                        cUrl = document.createElement('input'); cUrl.type = 'hidden'; cUrl.name = 'cloudinary_url';
+                        cId = document.createElement('input'); cId.type = 'hidden'; cId.name = 'cloudinary_id';
+                        uploadForm.appendChild(cUrl); uploadForm.appendChild(cId);
                     }
                     
-                    document.querySelector('input[name="cloudinary_url"]').value = result.image_url;
-                    document.querySelector('input[name="cloudinary_id"]').value = result.cloudinary_id;
+                    cUrl.value = result.image_url;
+                    cId.value = result.cloudinary_id;
 
                     aiSection.classList.remove('d-none'); 
                     aiEmptyState.classList.add('d-none');
                     btnAnalyze.classList.add('d-none'); 
                     btnSave.classList.remove('d-none');
+                } else {
+                    Swal.fire('Error', result.message || 'Analysis failed.', 'error');
                 }
-            } finally { loadingOverlay.style.display = 'none'; }
+            } catch (err) {
+                console.error("Analysis Error:", err);
+                Swal.fire('Error', 'Analysis failed: ' + err.message, 'error');
+            } finally { 
+                loadingOverlay.style.display = 'none'; 
+            }
         };
 
-        document.getElementById('uploadForm').onsubmit = async (e) => {
+        uploadForm.onsubmit = async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
             try {
-                const response = await fetch('save_artwork.php', { method: 'POST', body: formData });
+                const response = await fetch('save_artwork.php', { 
+                    method: 'POST', 
+                    headers: { 'X-CSRF-Token': csrfToken },
+                    body: formData 
+                });
                 const result = await response.json();
                 if (result.status === 'success') {
                     Swal.fire('Saved!', 'Painting is live in the gallery.', 'success').then(() => window.location.href = 'index.php');

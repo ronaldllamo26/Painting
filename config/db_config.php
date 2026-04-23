@@ -28,3 +28,14 @@ define('CLOUDINARY_API_SECRET', 'YOUR_API_SECRET');
 
 // AI API Keys (OpenAI or Google Vision)
 define('OPENAI_API_KEY', 'YOUR_OPENAI_API_KEY');
+
+// CSRF Protection
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
+function verifyCSRF($token) {
+    if (empty($token)) return false;
+    return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
+}

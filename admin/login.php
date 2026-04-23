@@ -8,20 +8,32 @@ if (isset($_SESSION['admin_logged_in'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+    // Simple Rate Limiting
+    if (!isset($_SESSION['login_attempts'])) $_SESSION['login_attempts'] = 0;
+    if (!isset($_SESSION['last_attempt_time'])) $_SESSION['last_attempt_time'] = time();
 
-    $stmt = $pdo->prepare("SELECT * FROM admin WHERE username = ?");
-    $stmt->execute([$username]);
-    $user = $stmt->fetch();
-
-    if ($user && password_verify($password, $user['password'])) {
-        $_SESSION['admin_logged_in'] = true;
-        $_SESSION['admin_user'] = $user['username'];
-        header("Location: index.php");
-        exit();
+    // Block for 5 minutes after 5 failed attempts
+    if ($_SESSION['login_attempts'] >= 5 && (time() - $_SESSION['last_attempt_time']) < 300) {
+        $error = "Too many failed attempts. Please try again in 5 minutes.";
     } else {
-        $error = "Invalid username or password.";
+        $username = $_POST['username'];
+        $password = $_POST['password'];
+
+        $stmt = $pdo->prepare("SELECT * FROM admin WHERE username = ?");
+        $stmt->execute([$username]);
+        $user = $stmt->fetch();
+
+        if ($user && password_verify($password, $user['password'])) {
+            $_SESSION['admin_logged_in'] = true;
+            $_SESSION['admin_user'] = $user['username'];
+            $_SESSION['login_attempts'] = 0; // Reset
+            header("Location: index.php");
+            exit();
+        } else {
+            $_SESSION['login_attempts']++;
+            $_SESSION['last_attempt_time'] = time();
+            $error = "Invalid username or password. (Attempt " . $_SESSION['login_attempts'] . "/5)";
+        }
     }
 }
 ?>

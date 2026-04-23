@@ -27,6 +27,7 @@ if (!$art) { header("Location: index.php"); exit(); }
         .tag-sug { cursor: pointer; transition: all 0.2s; font-size: 0.8rem; }
         .tag-sug:hover { background: #000 !important; color: #fff !important; }
     </style>
+    <meta name="csrf-token" content="<?php echo $_SESSION['csrf_token']; ?>">
 </head>
 <body>
     <?php include 'sidebar.php'; ?>
@@ -41,9 +42,30 @@ if (!$art) { header("Location: index.php"); exit(); }
             <div class="row justify-content-center">
                 <div class="col-lg-10">
                     <div class="glass-card p-4 p-md-5">
-                        <form id="editForm">
+                        <form id="editForm" enctype="multipart/form-data">
                             <input type="hidden" name="id" value="<?php echo $art['id']; ?>">
                             
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-4">
+                                    <label class="form-label">Current Image</label>
+                                    <div class="p-2 border rounded bg-light text-center">
+                                        <img src="../<?php echo $art['image_url']; ?>" class="img-fluid rounded mb-2" style="max-height: 150px;" id="currentImage">
+                                        <div class="small text-secondary">Current Preview</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="form-label">Replace Image (Optional)</label>
+                                    <div class="image-upload-zone p-4 border-dashed rounded text-center bg-light" style="cursor: pointer;" onclick="document.getElementById('imageInput').click()">
+                                        <input type="file" name="image" id="imageInput" class="d-none" accept="image/*">
+                                        <div id="uploadPlaceholder">
+                                            <i class="fas fa-cloud-upload-alt fa-2x text-secondary mb-2"></i>
+                                            <p class="small text-secondary mb-0">Click to replace or drag and drop</p>
+                                        </div>
+                                        <img id="imagePreview" src="#" alt="Preview" class="preview-img mx-auto" style="display: none; max-height: 150px;">
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="row g-4 mb-4">
                                 <div class="col-md-7">
                                     <label class="form-label">Painting Title</label>
@@ -110,6 +132,18 @@ if (!$art) { header("Location: index.php"); exit(); }
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+
+        imageInput.onchange = evt => {
+            const [file] = imageInput.files;
+            if (file) { 
+                imagePreview.src = URL.createObjectURL(file); 
+                imagePreview.style.display = 'block'; 
+                uploadPlaceholder.style.display = 'none';
+            }
+        }
         function addTag(tag) {
             const input = document.getElementById('aiTags');
             let currentTags = input.value.split(',').map(t => t.trim()).filter(t => t !== "");
@@ -126,6 +160,7 @@ if (!$art) { header("Location: index.php"); exit(); }
             try {
                 const response = await fetch('../api/update_artwork.php', {
                     method: 'POST',
+                    headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content },
                     body: formData
                 });
                 const result = await response.json();
