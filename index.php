@@ -43,31 +43,40 @@ foreach ($settings_raw as $s) {
     </div>
 
     <!-- Navbar -->
-    <nav class="navbar sticky-top bg-white py-3 shadow-sm">
+    <nav class="navbar navbar-expand-lg sticky-top bg-white py-3 shadow-sm">
         <div class="container">
-            <div class="d-flex align-items-center justify-content-between w-100">
-                <!-- Nav Links -->
-                <div class="nav-links d-none d-lg-flex gap-4">
-                    <a href="index.php" class="nav-link-custom active">HOME</a>
+            <!-- Mobile Brand -->
+            <a class="navbar-brand d-lg-none fw-bold" href="#" style="letter-spacing: 2px;">M. RILLERA</a>
+            
+            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <div class="collapse navbar-collapse justify-content-center" id="mainNavbar">
+                <!-- Desktop Brand (Hidden on mobile) -->
+                <a class="navbar-brand d-none d-lg-block position-absolute start-0 ms-4 fw-bold" href="#" style="letter-spacing: 2px;">M. RILLERA</a>
+
+                <div class="navbar-nav gap-lg-4 py-3 py-lg-0">
+                    <a href="#" class="nav-link-custom active">HOME</a>
                     <a href="#gallery" class="nav-link-custom">GALLERY</a>
                     <a href="#" class="nav-link-custom" data-bs-toggle="modal" data-bs-target="#trackOrderModal">TRACK ORDER</a>
                     <a href="#" class="nav-link-custom" data-bs-toggle="modal" data-bs-target="#verifyCOAModal">VERIFY COA</a>
                     <a href="#" class="nav-link-custom" data-bs-toggle="modal" data-bs-target="#commissionModal">COMMISSION</a>
                     <a href="portal.php" class="nav-link-custom fw-bold"><i class="fas fa-user-circle me-1"></i> COLLECTOR PORTAL</a>
                 </div>
+            </div>
 
-                <!-- Search & Actions -->
-                <div class="d-flex align-items-center gap-3">
-                    <div class="search-wrapper d-none d-md-block">
-                        <div class="input-group input-group-sm">
-                            <span class="input-group-text bg-light border-0"><i class="fas fa-search text-secondary"></i></span>
-                            <input type="text" id="navbarSearch" class="form-control bg-light border-0" placeholder="Search art...">
-                        </div>
+            <!-- Always Visible Actions -->
+            <div class="d-flex align-items-center gap-3 ms-auto">
+                <div class="search-wrapper d-none d-md-block">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light border-0"><i class="fas fa-search text-secondary"></i></span>
+                        <input type="text" id="navbarSearch" class="form-control bg-light border-0" placeholder="Search art...">
                     </div>
-                    <div class="position-relative cursor-pointer" onclick="openCart()">
-                        <i class="fas fa-shopping-bag fa-lg"></i>
-                        <span class="cart-count position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark">0</span>
-                    </div>
+                </div>
+                <div class="position-relative cursor-pointer" onclick="openCart()">
+                    <i class="fas fa-shopping-bag fa-lg"></i>
+                    <span class="cart-count position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark">0</span>
                 </div>
             </div>
         </div>
@@ -175,6 +184,7 @@ foreach ($settings_raw as $s) {
                             </div>
 
                             <form id="checkoutForm" class="mt-auto">
+                                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                                 <input type="hidden" name="artwork_id" id="checkoutArtId">
                                 <div class="mb-3">
                                     <input type="text" class="form-control rounded-0" name="customer_name" placeholder="Full Name" required>
@@ -193,10 +203,14 @@ foreach ($settings_raw as $s) {
                                 <div class="mb-3">
                                     <textarea class="form-control rounded-0" name="address" rows="2" placeholder="Delivery Address / Meet-up Location" required></textarea>
                                 </div>
-                                <div id="gcashSection" class="mb-3 p-3 border text-center">
-                                    <p class="small mb-2">Scan to Pay via GCash</p>
-                                    <img src="<?php echo $settings['gcash_qr']; ?>" class="img-fluid mb-2" style="max-width: 150px;">
-                                    <input type="file" class="form-control form-control-sm rounded-0" name="receipt" id="receiptInput">
+                                <div id="gcashSection" class="mb-3 p-3 border text-center bg-light rounded shadow-sm">
+                                    <p class="small fw-bold mb-2 text-dark">Scan to Pay via GCash</p>
+                                    <img src="<?php echo $settings['gcash_qr']; ?>" class="img-fluid mb-3 rounded" style="max-width: 150px;">
+                                    <div class="text-start">
+                                        <label class="form-label x-small fw-bold text-primary" style="letter-spacing: 1px;">UPLOAD GCASH RECEIPT (SCREENSHOT)</label>
+                                        <input type="file" class="form-control form-control-sm rounded-0" name="receipt" id="receiptInput" accept="image/*">
+                                        <p class="x-small text-muted mt-1 mb-0">Please upload a clear screenshot of your payment receipt.</p>
+                                    </div>
                                 </div>
                                 <button type="submit" class="btn btn-dark w-100 py-3 rounded-0 fw-bold" id="btnPlaceOrder">PLACE ORDER</button>
                             </form>
@@ -217,6 +231,7 @@ foreach ($settings_raw as $s) {
                         <p class="text-secondary small">Enter your contact number to see your order status.</p>
                     </div>
                     <form id="trackForm">
+                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                         <div class="mb-3">
                             <input type="text" id="trackContact" class="form-control form-control-lg text-center rounded-pill" placeholder="e.g. 09123456789" required>
                         </div>
@@ -242,6 +257,7 @@ foreach ($settings_raw as $s) {
                         <p class="text-secondary small">Enter the Certificate of Authenticity (COA) serial number.</p>
                     </div>
                     <form id="verifyForm">
+                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                         <div class="mb-3">
                             <input type="text" name="coa_number" class="form-control form-control-lg text-center rounded-pill" placeholder="e.g. COA-12345-6789" required>
                         </div>
@@ -270,6 +286,7 @@ foreach ($settings_raw as $s) {
                         <div class="col-md-7 p-4 p-md-5">
                             <h4 class="fw-bold mb-4">Request a Commission</h4>
                             <form id="commissionForm">
+                                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                                 <div class="mb-3">
                                     <input type="text" name="customer_name" class="form-control" placeholder="Your Name" required>
                                 </div>

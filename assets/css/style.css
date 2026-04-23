@@ -73,6 +73,29 @@ body {
     color: var(--text-primary);
 }
 
+/* Mobile Navbar Adjustments */
+@media (max-width: 991px) {
+    .navbar-collapse {
+        background: #fff;
+        padding: 20px;
+        border-radius: 0 0 15px 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+    }
+    .nav-link-custom {
+        display: block;
+        padding: 12px 0;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    .nav-link-custom:last-child {
+        border-bottom: none;
+    }
+}
+
 .search-wrapper {
     max-width: 500px;
     border-bottom: 1px solid #eee;

@@ -2,11 +2,10 @@
 header('Content-Type: application/json');
 require_once '../config/db_config.php';
 
-// CSRF Verification
-$headers = getallheaders();
-$csrfToken = $headers['X-CSRF-Token'] ?? '';
+// CSRF Verification via POST
+$csrfToken = $_POST['csrf_token'] ?? '';
 if (!verifyCSRF($csrfToken)) {
-    echo json_encode(['status' => 'error', 'message' => 'Invalid CSRF token.']);
+    echo json_encode(['status' => 'error', 'message' => 'Invalid security token.']);
     exit();
 }
 

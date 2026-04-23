@@ -11,131 +11,103 @@ require_once '../config/db_config.php';
     <title>Upload Artwork | Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { background: #f4f6f9; font-family: 'Inter', sans-serif; }
-        .glass-card { background: #fff; border-radius: 12px; border: none; box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1); }
-        .preview-img { max-height: 300px; border-radius: 8px; display: none; margin: 20px auto; border: 1px solid #eee; width: 100%; object-fit: contain; }
-        .loading-overlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.8); display: none; flex-direction: column;
-            align-items: center; justify-content: center; z-index: 9999;
+        body { background: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; }
+        .premium-card { background: #fff; border-radius: 16px; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.02); }
+        .form-label { font-weight: 700; font-size: 0.75rem; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .form-control { border-radius: 10px; padding: 12px; border: 1px solid #e2e8f0; background: #fff; }
+        .image-upload-zone { border: 2px dashed #cbd5e1; border-radius: 12px; padding: 30px; background: #f8fafc; cursor: pointer; transition: 0.3s; }
+        .image-upload-zone:hover { border-color: #000; background: #fff; }
+        .preview-img { max-height: 250px; border-radius: 12px; display: none; margin: 15px auto; width: 100%; object-fit: contain; }
+        .btn-save { background: #000; color: #fff; font-weight: 700; padding: 16px; border-radius: 12px; border: none; width: 100%; transition: 0.3s; }
+        .btn-save:hover { background: #333; transform: translateY(-2px); }
+        
+        /* Mobile Spacing Fix */
+        @media (max-width: 991.98px) {
+            .main-content { padding: 15px !important; margin-left: 0 !important; }
+            .premium-card { padding: 20px !important; }
         }
-        .tag-sug { cursor: pointer; transition: all 0.2s; font-size: 0.8rem; }
-        .tag-sug:hover { background: #000 !important; color: #fff !important; }
-        .form-label { font-weight: 600; font-size: 0.75rem; color: #4e73df; text-transform: uppercase; letter-spacing: 0.5px; }
     </style>
-    <!-- CSRF Token -->
     <meta name="csrf-token" content="<?php echo $_SESSION['csrf_token']; ?>">
 </head>
 <body>
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="spinner-border text-light mb-3" style="width: 3rem; height: 3rem;"></div>
-        <h4 id="loadingText" class="text-white">Analyzing with AI...</h4>
-    </div>
-
     <?php include 'sidebar.php'; ?>
 
     <div class="main-content">
-        <div class="container-fluid py-4">
-            <div class="d-flex align-items-center justify-content-between mb-4">
-                <div class="d-flex align-items-center">
-                    <a href="index.php" class="btn btn-sm btn-light border me-3 shadow-sm"><i class="fas fa-arrow-left"></i></a>
-                    <h3 class="fw-bold m-0" style="letter-spacing: -0.5px;">New Painting</h3>
-                </div>
-                <div class="text-secondary small d-none d-md-block">Matthew Rillera's Studio &bull; Admin Access</div>
+        <div class="container-fluid">
+            <div class="d-flex align-items-center mb-4">
+                <a href="index.php" class="btn btn-light border rounded-circle me-3"><i class="fas fa-arrow-left"></i></a>
+                <h3 class="fw-bold m-0">Add New Artwork</h3>
             </div>
 
             <div class="row justify-content-center">
-                <div class="col-lg-11">
-                    <div class="glass-card shadow-sm overflow-hidden">
-                        <div class="row g-0">
-                            <!-- Left Side: Form -->
-                            <div class="col-md-7 p-4 p-md-5 border-end">
-                                <form id="uploadForm" enctype="multipart/form-data">
-                                    <div class="mb-4">
+                <div class="col-lg-10">
+                    <div class="premium-card p-4 p-md-5">
+                        <form id="uploadForm" enctype="multipart/form-data">
+                            <!-- Security Token -->
+                            <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                            
+                            <div class="row g-4">
+                                <div class="col-md-6 border-end-md">
+                                    <div class="mb-3">
                                         <label class="form-label">Painting Title</label>
-                                        <input type="text" name="title" class="form-control form-control-lg border-light bg-light" required placeholder="Enter title...">
+                                        <input type="text" name="title" class="form-control" required placeholder="Masterpiece name...">
                                     </div>
-                                    
-                                    <div class="row g-3 mb-4">
-                                        <div class="col-md-7">
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-6">
                                             <label class="form-label">Price (PHP)</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text border-light bg-light">₱</span>
-                                                <input type="number" name="price" class="form-control border-light bg-light" required placeholder="0.00" style="max-width: 150px;">
-                                                <div class="input-group-text border-light bg-white flex-grow-1">
-                                                    <div class="form-check m-0">
-                                                        <input class="form-check-input" type="checkbox" name="is_negotiable" id="isNegotiable">
-                                                        <label class="form-check-label x-small fw-bold text-dark" for="isNegotiable">Negotiable</label>
-                                                    </div>
-                                                </div>
+                                            <input type="number" name="price" class="form-control" required placeholder="0.00">
+                                            <div class="form-check mt-2">
+                                                <input class="form-check-input" type="checkbox" name="is_negotiable" id="isNegotiable" checked>
+                                                <label class="form-check-label x-small fw-bold text-dark" for="isNegotiable" style="font-size: 0.7rem;">Negotiable</label>
                                             </div>
                                         </div>
-                                        <div class="col-md-5">
+                                        <div class="col-6">
                                             <label class="form-label">Dimensions</label>
-                                            <input type="text" name="size" class="form-control border-light bg-light" required placeholder="e.g. 24x36">
+                                            <input type="text" name="size" class="form-control" required placeholder="e.g. 24x36">
                                         </div>
                                     </div>
-
-                                    <div class="mb-4">
-                                        <label class="form-label">Medium / Material</label>
-                                        <input type="text" name="medium" class="form-control border-light bg-light" required placeholder="e.g. Acrylic on Canvas">
+                                    <div class="mb-3">
+                                        <label class="form-label">Medium</label>
+                                        <input type="text" name="medium" class="form-control" required placeholder="e.g. Acrylic on Canvas">
                                     </div>
-
-                                    <div class="mb-4">
-                                        <label class="form-label">Artwork Image</label>
-                                        <div class="image-upload-zone p-4 border-dashed rounded text-center bg-light" style="cursor: pointer;" onclick="document.getElementById('imageInput').click()">
-                                            <input type="file" name="image" id="imageInput" class="d-none" accept="image/*" required>
-                                            <div id="uploadPlaceholder">
-                                                <i class="fas fa-cloud-upload-alt fa-2x text-secondary mb-2"></i>
-                                                <p class="small text-secondary mb-0">Click to upload or drag and drop</p>
-                                            </div>
-                                            <img id="imagePreview" src="#" alt="Preview" class="preview-img mx-auto" style="display: none; max-height: 200px;">
-                                        </div>
-                                    </div>
-
-                                    <div class="d-grid">
-                                        <button type="button" id="btnAnalyze" class="btn btn-dark btn-lg py-3 shadow-sm"><i class="fas fa-magic me-2"></i> Analyze with AI</button>
-                                        <button type="submit" id="btnSave" class="btn btn-primary btn-lg py-3 shadow-sm d-none"><i class="fas fa-save me-2"></i> Save Painting</button>
-                                    </div>
-                                </form>
-                            </div>
-
-                            <!-- Right Side: AI Insights -->
-                            <div class="col-md-5 bg-light p-4 p-md-5 d-flex flex-column">
-                                <div id="aiSection" class="h-100 d-none animate__animated animate__fadeIn">
-                                    <div class="d-flex align-items-center mb-4">
-                                        <div class="bg-primary text-white p-2 rounded me-3"><i class="fas fa-robot"></i></div>
-                                        <h5 class="fw-bold m-0">AI Insights</h5>
-                                    </div>
-                                    
-                                    <div class="mb-4">
-                                        <label class="form-label text-dark opacity-75">Generated Description</label>
-                                        <textarea name="ai_description" id="aiDesc" class="form-control border-0 shadow-sm bg-white" rows="6" style="resize: none;"></textarea>
-                                    </div>
-
-                                    <div class="mb-4">
-                                        <label class="form-label text-dark opacity-75">Suggested Tags</label>
-                                        <input type="text" name="ai_tags" id="aiTags" class="form-control border-0 shadow-sm bg-white mb-3">
-                                        <div id="quickTags" class="d-flex flex-wrap gap-2">
-                                            <?php foreach(['Abstract','Modern','Vibrant','Portrait','Landscape','Minimalist'] as $t): ?>
-                                                <span class="badge bg-white text-dark border p-2 tag-sug" onclick="addTag('<?php echo $t; ?>')"><?php echo $t; ?></span>
+                                    <div class="mb-3">
+                                        <label class="form-label">Category / Tags</label>
+                                        <input type="text" name="tags" id="artTags" class="form-control mb-2" placeholder="Abstract, Portrait, etc.">
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <?php foreach(['Abstract','Modern','Portrait','Landscape','Minimalist'] as $t): ?>
+                                                <span class="badge bg-light text-dark border p-2" style="cursor: pointer; font-size: 0.7rem;" onclick="addTag('<?php echo $t; ?>')"><?php echo $t; ?></span>
                                             <?php endforeach; ?>
                                         </div>
                                     </div>
-                                    
-                                    <div class="mt-auto p-3 bg-white rounded shadow-sm border-start border-primary border-4">
-                                        <p class="x-small text-secondary mb-0"><i class="fas fa-info-circle me-1"></i> These suggestions help collectors find your work through search filters.</p>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Description</label>
+                                        <textarea name="description" class="form-control" rows="4" required placeholder="Tell the story..."></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Artwork Image</label>
+                                        <div class="image-upload-zone text-center" onclick="document.getElementById('imageInput').click()">
+                                            <input type="file" name="image" id="imageInput" class="d-none" accept="image/*" required>
+                                            <div id="uploadPlaceholder">
+                                                <i class="fas fa-image fa-2x text-secondary mb-2"></i>
+                                                <p class="small text-secondary mb-0">Select Artwork Image</p>
+                                            </div>
+                                            <img id="imagePreview" src="#" alt="Preview" class="preview-img">
+                                        </div>
                                     </div>
                                 </div>
-                                
-                                <div id="aiEmptyState" class="h-100 d-flex flex-column align-items-center justify-content-center text-center opacity-50 py-5">
-                                    <i class="fas fa-sparkles fa-3x mb-3"></i>
-                                    <h5>AI Studio Assistant</h5>
-                                    <p class="small">Fill in the details and analyze to see AI suggestions.</p>
-                                </div>
                             </div>
-                        </div>
+
+                            <div class="mt-4">
+                                <button type="submit" class="btn-save">
+                                    <i class="fas fa-save me-2"></i> SAVE & PUBLISH PAINTING
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -144,32 +116,10 @@ require_once '../config/db_config.php';
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Use a more robust way to get elements
         const getEl = (id) => document.getElementById(id);
-        
-        const uploadForm = getEl('uploadForm');
         const imageInput = getEl('imageInput');
         const imagePreview = getEl('imagePreview');
         const uploadPlaceholder = getEl('uploadPlaceholder');
-        const btnAnalyze = getEl('btnAnalyze');
-        const btnSave = getEl('btnSave');
-        const aiSection = getEl('aiSection');
-        const aiEmptyState = getEl('aiEmptyState');
-        const loadingOverlay = getEl('loadingOverlay');
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-
-        if (!csrfToken) {
-            console.error("CSRF token missing from meta tags.");
-        }
-
-        function addTag(tag) {
-            const input = getEl('aiTags');
-            let currentTags = input.value.split(',').map(t => t.trim()).filter(t => t !== "");
-            if (!currentTags.includes(tag)) { 
-                currentTags.push(tag); 
-                input.value = currentTags.join(', '); 
-            }
-        }
 
         imageInput.onchange = evt => {
             const [file] = imageInput.files;
@@ -180,72 +130,25 @@ require_once '../config/db_config.php';
             }
         }
 
-        btnAnalyze.onclick = async () => {
-            console.log("Analyze button clicked.");
-            if(!uploadForm.checkValidity()) { 
-                uploadForm.reportValidity(); 
-                return; 
-            }
-            
-            loadingOverlay.style.display = 'flex';
-            const formData = new FormData(uploadForm);
-            
-            try {
-                const response = await fetch('process_ai.php', { 
-                    method: 'POST', 
-                    headers: { 'X-CSRF-Token': csrfToken },
-                    body: formData 
-                });
-                
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                
-                const result = await response.json();
-                console.log("AI Result:", result);
+        function addTag(tag) {
+            const input = getEl('artTags');
+            let current = input.value.split(',').map(t => t.trim()).filter(t => t !== "");
+            if (!current.includes(tag)) { current.push(tag); input.value = current.join(', '); }
+        }
 
-                if (result.status === 'success') {
-                    getEl('aiDesc').value = result.description;
-                    getEl('aiTags').value = result.tags;
-                    
-                    // Hidden fields for Cloudinary/Local Path
-                    let cUrl = document.querySelector('input[name="cloudinary_url"]');
-                    let cId = document.querySelector('input[name="cloudinary_id"]');
-                    
-                    if(!cUrl) {
-                        cUrl = document.createElement('input'); cUrl.type = 'hidden'; cUrl.name = 'cloudinary_url';
-                        cId = document.createElement('input'); cId.type = 'hidden'; cId.name = 'cloudinary_id';
-                        uploadForm.appendChild(cUrl); uploadForm.appendChild(cId);
-                    }
-                    
-                    cUrl.value = result.image_url;
-                    cId.value = result.cloudinary_id;
-
-                    aiSection.classList.remove('d-none'); 
-                    aiEmptyState.classList.add('d-none');
-                    btnAnalyze.classList.add('d-none'); 
-                    btnSave.classList.remove('d-none');
-                } else {
-                    Swal.fire('Error', result.message || 'Analysis failed.', 'error');
-                }
-            } catch (err) {
-                console.error("Analysis Error:", err);
-                Swal.fire('Error', 'Analysis failed: ' + err.message, 'error');
-            } finally { 
-                loadingOverlay.style.display = 'none'; 
-            }
-        };
-
-        uploadForm.onsubmit = async (e) => {
+        getEl('uploadForm').onsubmit = async (e) => {
             e.preventDefault();
+            Swal.fire({ title: 'Publishing...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            
             const formData = new FormData(e.target);
             try {
                 const response = await fetch('save_artwork.php', { 
                     method: 'POST', 
-                    headers: { 'X-CSRF-Token': csrfToken },
                     body: formData 
                 });
                 const result = await response.json();
                 if (result.status === 'success') {
-                    Swal.fire('Saved!', 'Painting is live in the gallery.', 'success').then(() => window.location.href = 'index.php');
+                    Swal.fire('Published!', 'Painting is now live.', 'success').then(() => window.location.href = 'index.php');
                 } else {
                     Swal.fire('Error', result.message || 'Failed to save.', 'error');
                 }

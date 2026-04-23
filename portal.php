@@ -203,6 +203,7 @@ $is_logged_in = isset($_SESSION['collector_phone']);
                     </div>
 
                     <form id="collectorLoginForm">
+                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                         <div class="mb-4">
                             <label class="form-label small fw-bold">Contact Number</label>
                             <input type="text" class="form-control form-control-lg bg-light border-0" id="phoneInput" placeholder="e.g. 0912 345 6789" required>
@@ -264,8 +265,7 @@ $is_logged_in = isset($_SESSION['collector_phone']);
                     try {
                         const response = await fetch('api/portal_login.php', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ phone: phone })
+                            body: new FormData(loginForm)
                         });
                         const data = await response.json();
                         

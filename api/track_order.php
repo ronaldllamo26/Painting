@@ -1,6 +1,14 @@
 <?php
 header('Content-Type: application/json');
 require_once '../config/db_config.php';
+session_start();
+
+// CSRF Verification via POST
+$csrfToken = $_POST['csrf_token'] ?? '';
+if (!verifyCSRF($csrfToken)) {
+    echo json_encode(['status' => 'error', 'message' => 'Invalid security token.']);
+    exit();
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $contact = $_POST['contact_number'];

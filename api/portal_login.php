@@ -1,9 +1,16 @@
 <?php
 header('Content-Type: application/json');
 require_once '../config/db_config.php';
+session_start();
 
-$data = json_decode(file_get_contents('php://input'), true);
-$phone = $data['phone'] ?? '';
+// CSRF Verification via POST
+$csrfToken = $_POST['csrf_token'] ?? '';
+if (!verifyCSRF($csrfToken)) {
+    echo json_encode(['status' => 'error', 'message' => 'Invalid security token.']);
+    exit();
+}
+
+$phone = $_POST['phone'] ?? '';
 
 if (empty($phone)) {
     echo json_encode(['status' => 'error', 'message' => 'Phone number is required.']);

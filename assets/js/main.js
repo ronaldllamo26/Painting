@@ -264,7 +264,6 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const response = await fetch('api/request_commission.php', { 
                     method: 'POST', 
-                    headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content },
                     body: formData 
                 });
                 const result = await response.json();
@@ -285,7 +284,6 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('api/place_order.php', { 
                 method: 'POST', 
-                headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content },
                 body: formData 
             });
             const result = await response.json();
@@ -301,8 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('api/track_order.php', { 
                 method: 'POST', 
-                headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content },
-                body: new URLSearchParams({contact_number: contact}) 
+                body: new FormData(trackForm)
             });
             const result = await response.json();
             if (result.status === 'success') {
@@ -322,7 +319,6 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('api/verify_coa.php', { 
                 method: 'POST', 
-                headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content },
                 body: formData 
             });
             const result = await response.json();

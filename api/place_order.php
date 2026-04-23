@@ -2,11 +2,10 @@
 header('Content-Type: application/json');
 require_once '../config/db_config.php';
 
-// CSRF Verification
-$headers = getallheaders();
-$csrfToken = $headers['X-CSRF-Token'] ?? '';
+// CSRF Verification via POST
+$csrfToken = $_POST['csrf_token'] ?? '';
 if (!verifyCSRF($csrfToken)) {
-    echo json_encode(['status' => 'error', 'message' => 'Invalid CSRF token. Request denied.']);
+    echo json_encode(['status' => 'error', 'message' => 'Invalid security token. Please refresh the page.']);
     exit();
 }
 
@@ -16,9 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $contact = $_POST['contact_number'];
     $address = $_POST['address'];
     $payment = $_POST['payment_method'];
-    $proposed_price = !empty($_POST['proposed_price']) ? $_POST['proposed_price'] : null;
     $receipt_url = null;
-
     try {
         $pdo->beginTransaction();
 
@@ -32,26 +29,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // 2. Handle Receipt Upload if GCash
-        if ($payment === 'GCash' && isset($_FILES['receipt'])) {
+        if ($payment === 'GCash' && isset($_FILES['receipt']) && $_FILES['receipt']['error'] === UPLOAD_ERR_OK) {
             $file = $_FILES['receipt'];
             $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
             $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
             
-            // Validate extension
             if (!in_array($fileExtension, $allowedExtensions)) {
                 throw new Exception("Invalid file type. Only images are allowed.");
             }
 
-            // Validate MIME type
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $mimeType = finfo_file($finfo, $file['tmp_name']);
-            finfo_close($finfo);
-            if (strpos($mimeType, 'image/') !== 0) {
+            // More compatible image check
+            if (!@getimagesize($file['tmp_name'])) {
                 throw new Exception("File is not a valid image.");
             }
 
             $targetDir = "../uploads/receipts/";
-            if (!is_dir($targetDir)) mkdir($targetDir, 0755, true); // More secure permissions
+            if (!is_dir($targetDir)) @mkdir($targetDir, 0755, true);
             
             $fileName = time() . '_' . bin2hex(random_bytes(8)) . '.' . $fileExtension; // More unique name
             $targetFilePath = $targetDir . $fileName;
@@ -64,8 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // 3. Create Order
-        $stmt = $pdo->prepare("INSERT INTO orders (artwork_id, customer_name, contact_number, address, payment_method, receipt_url, proposed_price) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$artwork_id, $name, $contact, $address, $payment, $receipt_url, $proposed_price]);
+        $stmt = $pdo->prepare("INSERT INTO orders (artwork_id, customer_name, contact_number, address, payment_method, receipt_url) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$artwork_id, $name, $contact, $address, $payment, $receipt_url]);
 
         // 4. Update Artwork Status to Pending
         $stmt = $pdo->prepare("UPDATE artworks SET status = 'Pending' WHERE id = ?");

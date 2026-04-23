@@ -49,6 +49,10 @@ $yearlyRevenue = $stmtRev->fetchColumn() ?: 0;
         .x-small { font-size: 0.7rem; }
         .img-thumbnail-zoom { transition: transform 0.2s; cursor: pointer; }
         .img-thumbnail-zoom:hover { transform: scale(2.5); z-index: 100; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #888; }
     </style>
     <!-- CSRF Token -->
     <meta name="csrf-token" content="<?php echo $_SESSION['csrf_token']; ?>">
@@ -63,32 +67,32 @@ $yearlyRevenue = $stmtRev->fetchColumn() ?: 0;
         </div>
 
         <!-- Stats -->
-        <div class="row g-4 mb-5">
+        <div class="row g-4 mb-5 animate__animated animate__fadeInUp">
             <div class="col-6 col-md-4">
-                <div class="card-stat d-flex align-items-center justify-content-between">
+                <div class="card-stat d-flex flex-column justify-content-between p-4 border-0 shadow-sm" style="background: #fff; border-radius: 20px;">
+                    <div class="stat-icon mb-3" style="background: rgba(0,0,0,0.05); color: #000; border-radius: 12px; width: 50px; height: 50px;"><i class="fas fa-palette"></i></div>
                     <div>
-                        <h6 class="text-secondary small fw-bold text-uppercase mb-1 d-none d-md-block">Total Artworks</h6>
-                        <h3 class="fw-bold m-0"><?php echo $artworksCount; ?></h3>
+                        <h6 class="text-secondary small fw-bold text-uppercase mb-1" style="font-size: 0.65rem; letter-spacing: 1px;">Collection Size</h6>
+                        <h2 class="fw-800 m-0" style="letter-spacing: -1px;"><?php echo $artworksCount; ?></h2>
                     </div>
-                    <div class="stat-icon"><i class="fas fa-palette"></i></div>
                 </div>
             </div>
             <div class="col-6 col-md-4">
-                <div class="card-stat d-flex align-items-center justify-content-between">
+                <div class="card-stat d-flex flex-column justify-content-between p-4 border-0 shadow-sm" style="background: #fff; border-radius: 20px;">
+                    <div class="stat-icon mb-3" style="background: rgba(255, 193, 7, 0.1); color: #ffc107; border-radius: 12px; width: 50px; height: 50px;"><i class="fas fa-clock"></i></div>
                     <div>
-                        <h6 class="text-secondary small fw-bold text-uppercase mb-1 d-none d-md-block">Pending Orders</h6>
-                        <h3 class="fw-bold m-0 text-warning"><?php echo $pendingOrders; ?></h3>
+                        <h6 class="text-secondary small fw-bold text-uppercase mb-1" style="font-size: 0.65rem; letter-spacing: 1px;">Pending Inquiries</h6>
+                        <h2 class="fw-800 m-0 text-warning" style="letter-spacing: -1px;"><?php echo $pendingOrders; ?></h2>
                     </div>
-                    <div class="stat-icon"><i class="fas fa-shopping-bag"></i></div>
                 </div>
             </div>
             <div class="col-12 col-md-4">
-                <div class="card-stat d-flex align-items-center justify-content-between">
+                <div class="card-stat d-flex flex-column justify-content-between p-4 border-0 shadow-sm" style="background: #000; color: #fff; border-radius: 20px;">
+                    <div class="stat-icon mb-3" style="background: rgba(255,255,255,0.1); color: #fff; border-radius: 12px; width: 50px; height: 50px;"><i class="fas fa-wallet"></i></div>
                     <div>
-                        <h6 class="text-secondary small fw-bold text-uppercase mb-1 d-none d-md-block">Revenue in <?php echo $selectedYear; ?></h6>
-                        <h3 class="fw-bold m-0 text-success">₱<?php echo number_format($yearlyRevenue, 2); ?></h3>
+                        <h6 class="text-white-50 small fw-bold text-uppercase mb-1" style="font-size: 0.65rem; letter-spacing: 1px;">Revenue <?php echo $selectedYear; ?></h6>
+                        <h2 class="fw-800 m-0" style="letter-spacing: -1px;">₱<?php echo number_format($yearlyRevenue, 0); ?></h2>
                     </div>
-                    <div class="stat-icon"><i class="fas fa-wallet text-success"></i></div>
                 </div>
             </div>
         </div>
@@ -134,13 +138,18 @@ $yearlyRevenue = $stmtRev->fetchColumn() ?: 0;
                         foreach ($recentArts as $art) {
                             $statusBadge = $art['status'] === 'Available' ? 'bg-info' : ($art['status'] === 'Sold' ? 'bg-secondary' : 'bg-warning');
                             ?>
-                            <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                            <div class="d-flex align-items-center mb-3 pb-3 border-bottom pe-3">
                                 <img src="../<?php echo $art['image_url']; ?>" class="rounded-3 me-3 img-thumbnail-zoom" style="width: 50px; height: 50px; object-fit: cover;">
-                                <div class="flex-grow-1 overflow-hidden">
+                                <div class="flex-grow-1 overflow-hidden" style="min-width: 0;">
                                     <h6 class="mb-0 small fw-bold text-truncate"><?php echo $art['title']; ?></h6>
                                     <span class="badge <?php echo $statusBadge; ?> x-small opacity-75 mt-1"><?php echo $art['status']; ?></span>
                                 </div>
-                                <div class="ms-2 d-flex gap-1">
+                                <div class="ms-2 d-flex gap-1 flex-shrink-0">
+                                    <?php if($art['status'] === 'Pending'): ?>
+                                        <button class="btn btn-sm btn-outline-warning p-1" onclick="resetArtStatus(<?php echo $art['id']; ?>, this)" title="Reset to Available">
+                                            <i class="fas fa-undo x-small"></i>
+                                        </button>
+                                    <?php endif; ?>
                                     <a href="edit_artwork.php?id=<?php echo $art['id']; ?>" class="btn btn-sm btn-light border p-1" title="Edit"><i class="fas fa-edit x-small"></i></a>
                                     <button class="btn btn-sm btn-light border p-1 text-danger" onclick="deleteArtwork(<?php echo $art['id']; ?>, this)" title="Delete"><i class="fas fa-trash-alt x-small"></i></button>
                                 </div>
@@ -336,42 +345,25 @@ $yearlyRevenue = $stmtRev->fetchColumn() ?: 0;
             });
             if (isConfirmed) {
                 try {
+                    const formData = new FormData();
+                    formData.append('order_id', orderId);
+                    formData.append('status', status);
+                    formData.append('csrf_token', csrfToken);
+
                     const response = await fetch('../api/update_order.php', { 
                         method: 'POST', 
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'X-CSRF-Token': csrfToken
-                        }, 
-                        body: JSON.stringify({ order_id: orderId, status: status }) 
+                        body: formData 
                     });
                     const result = await response.json();
                     if (result.status === 'success') {
                         Swal.fire({ title: 'Success', text: `Order ${status.toLowerCase()}!`, icon: 'success', timer: 1000, showConfirmButton: false });
-                        
-                        // Try seamless update
-                        const row = btn.closest('tr');
-                        if(row) {
-                            const statusBadge = row.querySelector('.badge');
-                            if(statusBadge) {
-                                statusBadge.textContent = status;
-                                statusBadge.className = `badge x-small p-2 rounded-pill ${status === 'Approved' ? 'bg-success text-white' : 'bg-danger text-white'}`;
-                            }
-                            const actionGroup = btn.closest('.btn-group');
-                            if(actionGroup) {
-                                const approveBtn = actionGroup.querySelector('button[title="Approve"]');
-                                const cancelBtn = actionGroup.querySelector('button[title="Cancel"]');
-                                if(approveBtn) approveBtn.remove();
-                                if(cancelBtn) cancelBtn.remove();
-                            }
-                        } else {
-                            location.reload(); // Fallback
-                        }
+                        location.reload();
                     } else {
                         Swal.fire('Error', result.message, 'error');
                     }
                 } catch (e) {
                     console.error(e);
-                    location.reload(); // Force reload on any error to ensure UI is correct
+                    location.reload();
                 }
             }
         }
@@ -380,21 +372,17 @@ $yearlyRevenue = $stmtRev->fetchColumn() ?: 0;
             const { isConfirmed } = await Swal.fire({ title: 'Delete?', text: "Remove this order from history?", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' });
             if (isConfirmed) {
                 try {
+                    const formData = new FormData();
+                    formData.append('id', id);
+                    formData.append('csrf_token', csrfToken);
+
                     const response = await fetch('../api/delete_order.php', { 
                         method: 'POST', 
-                        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken }, 
-                        body: JSON.stringify({ id: id }) 
+                        body: formData 
                     });
                     const result = await response.json();
                     if (result.status === 'success') {
-                        const row = btn.closest('tr');
-                        if(row) {
-                            row.style.opacity = '0.3';
-                            row.style.transition = '0.5s';
-                            setTimeout(() => row.remove(), 500);
-                        } else {
-                            location.reload();
-                        }
+                        location.reload();
                     }
                 } catch (e) { location.reload(); }
             }
@@ -413,23 +401,17 @@ $yearlyRevenue = $stmtRev->fetchColumn() ?: 0;
             
             if (isConfirmed) {
                 try {
+                    const formData = new FormData();
+                    formData.append('id', id);
+                    formData.append('csrf_token', csrfToken);
+
                     const response = await fetch('../api/delete_artwork.php', { 
                         method: 'POST', 
-                        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken }, 
-                        body: JSON.stringify({ id: id }) 
+                        body: formData 
                     });
                     const result = await response.json();
                     if (result.status === 'success') {
-                        // Find the root container of the row (the one with border-bottom)
-                        const row = btn.closest('.border-bottom');
-                        if(row) {
-                            row.style.opacity = '0';
-                            row.style.transform = 'translateX(20px)';
-                            row.style.transition = 'all 0.4s ease';
-                            setTimeout(() => row.remove(), 400);
-                        } else {
-                            location.reload();
-                        }
+                        location.reload();
                     } else {
                         Swal.fire('Error', result.message || 'Failed to delete.', 'error');
                     }
@@ -438,6 +420,23 @@ $yearlyRevenue = $stmtRev->fetchColumn() ?: 0;
                     location.reload(); 
                 }
             }
+        }
+
+        async function resetArtStatus(id, btn) {
+            const formData = new FormData();
+            formData.append('id', id);
+            formData.append('csrf_token', csrfToken);
+            
+            try {
+                const resp = await fetch('../api/reset_art.php', { method: 'POST', body: formData });
+                const res = await resp.json();
+                if (res.status === 'success') {
+                    Swal.fire({ title: 'Success', text: 'Status reset to Available!', icon: 'success', timer: 1000, showConfirmButton: false });
+                    location.reload();
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
+            } catch (e) { location.reload(); }
         }
 
         function exportToCSV() {
