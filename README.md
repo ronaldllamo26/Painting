@@ -4,7 +4,6 @@ https://github.com/user-attachments/assets/18167ea8-ac33-4606-9741-8ee22ccc5490
 
 A premium, modern, and fully responsive Art Marketplace and Gallery system designed for contemporary artists. This platform allows artists to showcase their hand-painted masterpieces, manage inventory, and process orders through a professional administrative dashboard.
 
-![Banner](https://via.placeholder.com/1200x400?text=Matthew+Rillera+Studio+Gallery)
 
 ## ✨ Features
 
