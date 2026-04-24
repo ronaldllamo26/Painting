@@ -18,6 +18,7 @@ $commissions = $pdo->query("SELECT * FROM commissions ORDER BY created_at DESC")
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/admin.css"> <!-- Assuming common admin styles -->
+    <meta name="csrf-token" content="<?php echo $_SESSION['csrf_token']; ?>">
     <style>
         .glass-card {
             background: rgba(255, 255, 255, 0.95);
@@ -110,19 +111,21 @@ $commissions = $pdo->query("SELECT * FROM commissions ORDER BY created_at DESC")
                     const response = await fetch('../api/delete_commission.php', {
                         method: 'POST',
                         headers: { 
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            'X-CSRF-Token': csrfToken 
+                            'Content-Type': 'application/x-www-form-urlencoded'
                         },
-                        body: `id=${id}`
+                        body: `id=${id}&csrf_token=${csrfToken}`
                     });
                     const result = await response.json();
                     if (result.status === 'success') {
                         btn.closest('tr').classList.add('animate__animated', 'animate__fadeOut');
                         setTimeout(() => btn.closest('tr').remove(), 500);
                         Swal.fire('Deleted!', '', 'success');
+                    } else {
+                        Swal.fire('Error', result.message || 'Deletion failed', 'error');
                     }
                 } catch (e) {
-                    Swal.fire('Error', 'Failed to delete.', 'error');
+                    console.error(e);
+                    Swal.fire('Error', 'Network error or server failed to respond correctly.', 'error');
                 }
             }
         }

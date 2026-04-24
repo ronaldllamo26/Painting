@@ -139,8 +139,13 @@ foreach ($settings_raw as $s) {
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
                 <div class="modal-body p-4 p-md-5">
-                    <h4 class="fw-bold mb-4">Your Collection</h4>
+                    <h4 class="fw-bold mb-4">Your Bag & Orders</h4>
                     <div id="cartItemsList" class="mb-4"></div>
+                    <div id="recentOrdersList" class="mb-4 d-none">
+                        <hr>
+                        <h6 class="fw-bold mb-3 small text-uppercase" style="letter-spacing: 1px;">Recent Orders</h6>
+                        <div id="bagOrdersContent"></div>
+                    </div>
                     <div id="cartEmptyMsg" class="text-center py-4 d-none">
                         <i class="fas fa-shopping-bag fa-3x mb-3 opacity-25"></i>
                         <p class="text-secondary">Your bag is empty.</p>
@@ -295,6 +300,9 @@ foreach ($settings_raw as $s) {
                                 </div>
                                 <div class="mb-3">
                                     <input type="text" name="subject" class="form-control" placeholder="Project Subject (e.g. Family Portrait)" required>
+                                </div>
+                                <div class="mb-3">
+                                    <input type="number" name="budget" class="form-control" placeholder="Your Estimated Budget (PHP)">
                                 </div>
                                 <div class="mb-3">
                                     <textarea name="description" class="form-control" rows="4" placeholder="Describe your vision (size, medium, additional details...)" required></textarea>

@@ -76,7 +76,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         <h5 class="artwork-title fw-bold" style="font-family: var(--font-serif);">${sanitizeHTML(art.title)}</h5>
                         <p class="text-secondary x-small mb-2 text-uppercase" style="letter-spacing: 2px;">${art.size} | ${art.medium}</p>
                         <p class="artwork-price fw-bold mb-3">₱${parseFloat(art.price).toLocaleString()}</p>
-                        <button class="btn btn-dark w-100 rounded-0 py-2 small fw-bold" onclick="viewDetails(${art.id})">BUY NOW</button>
+                        <div class="d-flex gap-1">
+                            <button class="btn btn-dark flex-grow-1 rounded-0 py-2 small fw-bold" onclick="viewDetails(${art.id})">BUY NOW</button>
+                            <button class="btn btn-outline-dark px-3 rounded-0 py-2 small" onclick="addToCartById(${art.id})" title="Add to Bag"><i class="fas fa-shopping-bag"></i></button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -205,10 +208,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cart Logic
     window.cart = JSON.parse(localStorage.getItem('art_cart')) || [];
 
-    window.openCart = () => {
+    window.openCart = async () => {
         const list = document.getElementById('cartItemsList');
         const empty = document.getElementById('cartEmptyMsg');
+        const ordersList = document.getElementById('recentOrdersList');
+        const ordersContent = document.getElementById('bagOrdersContent');
+        
         list.innerHTML = '';
+        ordersList.classList.add('d-none');
         
         if (window.cart.length === 0) {
             empty.classList.remove('d-none');
@@ -227,6 +234,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             });
         }
+
+        // Auto-load recent orders if phone exists
+        const savedPhone = localStorage.getItem('customer_phone');
+        if (savedPhone) {
+            try {
+                const formData = new FormData();
+                formData.append('trackContact', savedPhone);
+                formData.append('csrf_token', document.querySelector('meta[name="csrf-token"]').content);
+                
+                const response = await fetch('api/track_order.php', { method: 'POST', body: formData });
+                const result = await response.json();
+                
+                if (result.status === 'success' && result.data.length > 0) {
+                    empty.classList.add('d-none');
+                    ordersList.classList.remove('d-none');
+                    ordersContent.innerHTML = result.data.map(o => `
+                        <div class="d-flex align-items-center mb-2 p-2 bg-light rounded shadow-sm">
+                            <img src="${o.art_img}" style="width: 40px; height: 40px; object-fit: cover;" class="me-3 rounded">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0 x-small fw-bold">${sanitizeHTML(o.art_title)}</h6>
+                                <p class="mb-0 x-small text-primary fw-bold text-uppercase" style="font-size: 0.6rem;">Status: ${o.order_status}</p>
+                            </div>
+                        </div>`).join('');
+                }
+            } catch (e) { console.error("Error loading bag orders:", e); }
+        }
+
         new bootstrap.Modal(document.getElementById('cartModal')).show();
     };
 
@@ -288,6 +322,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const result = await response.json();
             if (result.status === 'success') {
+                // Save phone for future bag auto-sync
+                localStorage.setItem('customer_phone', formData.get('contact_number'));
                 Swal.fire('Success!', 'Order placed successfully.', 'success').then(() => location.reload());
             } else { Swal.fire('Error', result.message, 'error'); }
         } catch (err) { Swal.fire('Error', 'Submission failed.', 'error'); }
@@ -338,6 +374,34 @@ document.addEventListener('DOMContentLoaded', () => {
             } else { verifyResult.innerHTML = `<div class="alert alert-danger text-center">${result.message}</div>`; }
         } catch (err) { verifyResult.innerHTML = `<div class="alert alert-danger text-center">Failed to verify.</div>`; }
     };
+
+    // Search Functionality
+    if (navbarSearch) {
+        navbarSearch.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase().trim();
+            currentPage = 1;
+
+            if (term === '') {
+                filteredArtworks = [...allArtworks];
+            } else {
+                filteredArtworks = allArtworks.filter(art => {
+                    const title = (art.title || '').toLowerCase();
+                    const tags = (art.ai_tags || '').toLowerCase();
+                    const medium = (art.medium || '').toLowerCase();
+                    const size = (art.size || '').toLowerCase();
+                    
+                    return title.includes(term) || 
+                           tags.includes(term) || 
+                           medium.includes(term) ||
+                           size.includes(term);
+                });
+            }
+            renderGallery(filteredArtworks);
+            
+            // If we are far down the page, scroll back to gallery
+            if (term !== '' && window.scrollY > 500) scrollUp();
+        });
+    }
 
     // Magnifier Logic
     const magnifierContainer = document.getElementById('magnifierContainer');

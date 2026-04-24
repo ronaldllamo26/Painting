@@ -145,7 +145,16 @@ $yearlyRevenue = $stmtRev->fetchColumn() ?: 0;
                                     <span class="badge <?php echo $statusBadge; ?> x-small opacity-75 mt-1"><?php echo $art['status']; ?></span>
                                 </div>
                                 <div class="ms-2 d-flex gap-1 flex-shrink-0">
-                                    <?php if($art['status'] === 'Pending'): ?>
+                                    <?php if($art['status'] === 'Pending'): 
+                                        $stmtO = $pdo->prepare("SELECT id FROM orders WHERE artwork_id = ? AND order_status = 'Pending' LIMIT 1");
+                                        $stmtO->execute([$art['id']]);
+                                        $oid = $stmtO->fetchColumn();
+                                    ?>
+                                        <?php if($oid): ?>
+                                            <button class="btn btn-sm btn-dark p-1" onclick="updateOrder(<?php echo $oid; ?>, 'Approved', this)" title="Accept Transaction">
+                                                <i class="fas fa-check x-small"></i>
+                                            </button>
+                                        <?php endif; ?>
                                         <button class="btn btn-sm btn-outline-warning p-1" onclick="resetArtStatus(<?php echo $art['id']; ?>, this)" title="Reset to Available">
                                             <i class="fas fa-undo x-small"></i>
                                         </button>

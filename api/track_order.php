@@ -11,15 +11,15 @@ if (!verifyCSRF($csrfToken)) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $contact = $_POST['contact_number'];
+    $contact = trim($_POST['contact_number']);
 
     try {
         $stmt = $pdo->prepare("SELECT o.*, a.title as art_title, a.image_url as art_img 
                              FROM orders o 
                              JOIN artworks a ON o.artwork_id = a.id 
-                             WHERE o.contact_number = ? 
+                             WHERE o.contact_number LIKE ? 
                              ORDER BY o.order_date DESC");
-        $stmt->execute([$contact]);
+        $stmt->execute(['%' . $contact . '%']);
         $orders = $stmt->fetchAll();
 
         if ($orders) {

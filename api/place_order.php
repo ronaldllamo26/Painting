@@ -12,7 +12,7 @@ if (!verifyCSRF($csrfToken)) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $artwork_id = $_POST['artwork_id'];
     $name = $_POST['customer_name'];
-    $contact = $_POST['contact_number'];
+    $contact = trim($_POST['contact_number']);
     $address = $_POST['address'];
     $payment = $_POST['payment_method'];
     $receipt_url = null;

@@ -11,7 +11,7 @@ if (!verifyCSRF($csrfToken)) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = $_POST['customer_name'];
-    $contact = $_POST['contact_number'];
+    $contact = trim($_POST['contact_number']);
     $email = $_POST['email'] ?? null;
     $subject = $_POST['subject'];
     $description = $_POST['description'];
