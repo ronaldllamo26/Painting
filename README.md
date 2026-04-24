@@ -36,8 +36,6 @@ A premium, modern, and fully responsive Art Marketplace and Gallery system desig
 
 2. **Database Setup**:
 
-https://github.com/user-attachments/assets/63375138-b7ae-44d8-9881-96f15cfcecd0
-
 
    - Create a database named `art_gallery`.
    - Import the provided SQL file (if applicable) or use the following tables: `admin`, `artworks`, `orders`, `settings`.
