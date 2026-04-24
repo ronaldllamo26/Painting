@@ -29,10 +29,18 @@ A premium, modern, and fully responsive Art Marketplace and Gallery system desig
 
 1. **Clone the repository**:
    ```bash
+
+https://github.com/user-attachments/assets/18167ea8-ac33-4606-9741-8ee22ccc5490
+
+
    git clone https://github.com/ronaldllamo26/Painting.git
    ```
 
 2. **Database Setup**:
+
+https://github.com/user-attachments/assets/63375138-b7ae-44d8-9881-96f15cfcecd0
+
+
    - Create a database named `art_gallery`.
    - Import the provided SQL file (if applicable) or use the following tables: `admin`, `artworks`, `orders`, `settings`.
 
