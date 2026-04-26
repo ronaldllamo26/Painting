@@ -32,12 +32,10 @@ foreach ($settings_raw as $s) {
         <div class="marquee-content">
             <span>AUTHENTIC HAND-PAINTED MASTERPIECES</span>
             <span>CERTIFICATE OF AUTHENTICITY INCLUDED</span>
-            <span>FREE SHIPPING NATIONWIDE</span>
             <span>COMMISSIONS OPEN FOR 2026</span>
             <!-- Duplicate for seamless scroll -->
             <span>AUTHENTIC HAND-PAINTED MASTERPIECES</span>
             <span>CERTIFICATE OF AUTHENTICITY INCLUDED</span>
-            <span>FREE SHIPPING NATIONWIDE</span>
             <span>COMMISSIONS OPEN FOR 2026</span>
         </div>
     </div>
